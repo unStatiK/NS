@@ -1,6 +1,4 @@
 NecroSilence Casual
------------------------------------
-
 
 image:https://github.com/unStatiK/NS/raw/master/ns.jpeg
  
