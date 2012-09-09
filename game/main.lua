@@ -519,84 +519,50 @@ function love.update(dt)
 
 end
 
+function set_flags(var_z1,var_z2,var_f_wlc,var_rs,var_h1,var_h2,var_h3,var_ca,var_csa,var_cg,var_cr,var_cp,var_cn,var_rn,var_lm,var_zl,var_c,var_s,var_sf,var_f,var_f_cont)
+
+     act_z1 = var_z1
+     act_z2 = var_z2
+     f_wlc = var_f_wlc
+     act_rs = var_rs
+     act_h1 = var_h1
+     act_h2 = var_h2
+     act_h3 = var_h3
+     act_ca = var_ca
+     act_csa = var_csa
+     act_cg = var_cg
+     act_cr = var_cr
+     act_cp = var_cp
+     act_cn = var_cn
+     act_rn = var_rn
+     act_lm = var_lm
+     act_zl = var_zl
+     act_c = var_c
+     act_s = var_s
+     act_sf = var_sf
+     act_f = var_f
+     f_cont = var_f_cont
+
+end  
+
 function check_cli()
   txt = trim(txt)
 
 if game.is_fight_mode() == 1 and txt == "y" then 
      txt = ""
-     act_z1 = 0
-     act_z2 = 0
-     f_wlc = 0
-     act_rs = 0
-     act_h1 = 0
-     act_h2 = 0
-     act_h3 = 0
-     act_ca = 0
-     act_csa = 0
-     act_cg = 0
-     act_cr = 0
-     act_cp = 0
-     act_cn = 0
-     act_rn = 0
-     act_lm = 0
-     act_zl = 0
-     act_c = 0
-     act_s = 0
-     act_sf = 0
-     act_f = 1
-     f_cont = 1
+     set_flags(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1)
  end
  if game.is_fight_mode() == 1 and txt == "n" then 
      txt = ""
-     act_z1 = 0
-     act_z2 = 0
-     f_wlc = 0
-     act_rs = 0
-     act_h1 = 0
-     act_h2 = 0
-     act_h3 = 0
-     act_ca = 0
-     act_csa = 0
-     act_cg = 0
-     act_cr = 0
-     act_cp = 0
-     act_cn = 0
-     act_rn = 0
-     act_lm = 0
-     act_zl = 0
-     act_c = 0
-     act_s = 0
-     act_sf = 0
-     act_f = 1
-     f_cont = 0
+     set_flags(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0)
      game.set_finish_fight()
  end  
  if game.is_start_fight_mode() == 1 then
   f_fail = game.check_zone_unit_ld(txt)
   txt = ""
    if f_fail == 1 then
-     act_z1 = 0
-     act_z2 = 0
-     f_wlc = 0
-     act_rs = 0
-     act_h1 = 0
-     act_h2 = 0
-     act_h3 = 0
-     act_ca = 0
-     act_csa = 0
-     act_cg = 0
-     act_cr = 0
-     act_cp = 0
-     act_cn = 0
-     act_rn = 0
-     act_lm = 0
-     act_zl = 0
-     act_c = 0
-     act_s = 0
-     act_sf = 0
-     act_f = 1
+     set_flags(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1)
      game.set_fight_mode()
-     f_cont = 1
    end
  end
 
@@ -605,609 +571,167 @@ if game.is_fight_mode() == 1 and txt == "y" then
      love.event.push("quit")
   end
   if txt=="z" then
+    txt = ""
     if game.is_home() == 1 then
-     act_z1 = 1 
-     act_z2 = 0
+     set_flags(1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
     end
     if game.is_zone() == 1 then
-     act_z1 = 0 
-     act_z2 = 1
+     set_flags(0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
     end 
-     txt = ""
-     f_wlc = 0
-     act_rs = 0
-     act_h1 = 0
-     act_h2 = 0
-     act_h3 = 0
-     act_ca = 0
-     act_csa = 0
-     act_cg = 0
-     act_cr = 0
-     act_cp = 0
-     act_cn = 0
-     act_rn = 0
-     act_lm = 0
-     act_zl = 0
-     act_c = 0
-     act_s = 0
-     act_sf = 0
-     act_f = 0
   end
   if txt=="clr" then
-    act_z1 = 0
-    act_z2 = 0
     txt = ""
-    f_wlc = 0
-    act_rs = 0
-    act_h1 = 0
-    act_h2 = 0
-    act_h3 = 0
-    act_ca = 0
-    act_csa = 0
-    act_cg = 0
-    act_cr = 0
-    act_cp = 0
-    act_cn = 0
-    act_rn = 0
-    act_lm = 0
-    act_zl = 0
-    act_c = 0
-    act_s = 0
-    act_sf = 0
-    act_f = 0
+    set_flags(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
   end
   if txt=="rs" then
     if game.is_home() == 1 then
-     act_z1 = 0
-     act_z2 = 0
      txt = ""
-     f_wlc = 0
-     act_rs = 1
-     act_h1 = 0
-     act_h2 = 0
-     act_h3 = 0
-     act_ca = 0
-     act_csa = 0
-     act_cg = 0
-     act_cr = 0
-     act_cp = 0
-     act_cn = 0
-     act_rn = 0
-     act_lm = 0
-     act_zl = 0
-     act_c = 0
-     act_s = 0
-     act_sf = 0
-     act_f = 0
+     set_flags(0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
      game.restore()
     end
   end
   if txt=="rn" then
     if game.is_home() == 1 then
-    act_z1 = 0
-    act_z2 = 0
      txt = ""
-     f_wlc = 0
-     act_rs = 0
-     act_h1 = 0
-     act_h2 = 0
-     act_h3 = 0
-     act_ca = 0
-     act_csa = 0
-     act_cg = 0
-     act_cr = 0
-     act_cp = 0
-     act_cn = 0
-     act_rn = 1
-     act_lm = 0
-     act_zl = 0
-     act_c = 0
-     act_s = 0
-     act_sf = 0
-     act_f = 0
+     set_flags(0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0)
      f_fail = game.read_necro()
     end
   end
   if txt=="cb" then
    if game.is_home() == 1 then
-    act_z1 = 0
-    act_z2 = 0
     txt = ""
-    f_wlc = 0
-    act_rs = 0
-    act_h1 = 0
-    act_h2 = 0
-    act_h3 = 0
-    act_ca = 0
-    act_csa = 0
-    act_cg = 0
-    act_cr = 0
-    act_cp = 0
-    act_cn = 0
-    act_rn = 0
-    act_lm = 0
-    act_zl = 0
-    act_c = 0
-    act_s = 0
-    act_sf = 0
-    act_f = 0
+    set_flags(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
     game.into_lab()
    end
   end
   if txt=="r" then
-    act_z1 = 0
-    act_z2 = 0
     txt = ""
-    f_wlc = 0
-    act_rs = 0
-    act_h1 = 0
-    act_h2 = 0
-    act_h3 = 0
-    act_ca = 0
-    act_csa = 0
-    act_cg = 0
-    act_cr = 0
-    act_cp = 0
-    act_cn = 0
-    act_rn = 0
-    act_lm = 0
-    act_zl = 0
-    act_c = 0
-    act_s = 0
-    act_sf = 0
-    act_f = 0
+    set_flags(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
     game.return_home()
   end
   if txt=="h" then
-    act_z1 = 0
-    act_z2 = 0
      txt = ""
-     f_wlc = 0
-     act_rs = 0
-     act_ca = 0
-     act_csa = 0
-     act_cg = 0
-     act_cr = 0
-     act_cp = 0
-     act_cn = 0
-     act_rn = 0
-     act_lm = 0
-     act_zl = 0
-     act_c = 0
-     act_s = 0
-     act_sf = 0
-     act_f = 0
     if game.is_home() == 1 then
-     act_h1 = 1
-     act_h2 = 0
-     act_h3 = 0
+     set_flags(0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
     end
     if game.is_lab() == 1 then
-     act_h1 = 0
-     act_h2 = 1
-     act_h3 = 0
+     set_flags(0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
     end
     if game.is_zone() == 1 then
-     act_h1 = 0
-     act_h2 = 0
-     act_h3 = 1
+     set_flags(0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
     end
   end
   if txt=="ca" then
     if game.is_lab() == 1 then
-    act_z1 = 0
-    act_z2 = 0
      txt = ""
-     f_wlc = 0
-     act_rs = 0
-     act_h1 = 0
-     act_h2 = 0
-     act_h3 = 0
-     act_ca = 1
-     act_csa = 0
-     act_cg = 0
-     act_cr = 0
-     act_cp = 0
-     act_cn = 0
-     act_rn = 0
-     act_lm = 0
-     act_zl = 0
-     act_c = 0
-     act_s = 0
-     act_sf = 0
-     act_f = 0
+     set_flags(0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0)
      f_fail = game.build_arm()
     end
   end
   if txt=="csa" then
     if game.is_lab() == 1 then
-    act_z1 = 0
-    act_z2 = 0
      txt = ""
-     f_wlc = 0
-     act_rs = 0
-     act_h1 = 0
-     act_h2 = 0
-     act_h3 = 0
-     act_ca = 0
-     act_csa = 1
-     act_cg = 0
-     act_cr = 0
-     act_cp = 0
-     act_cn = 0
-     act_rn = 0
-     act_lm = 0
-     act_zl = 0
-     act_c = 0
-     act_s = 0
-     act_sf = 0
-     act_f = 0
+     set_flags(0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0)
      f_fail = game.build_superarm()
     end
   end
   if txt=="cg" then
     if game.is_lab() == 1 then
-    act_z1 = 0
-    act_z2 = 0
      txt = ""
-     f_wlc = 0
-     act_rs = 0
-     act_h1 = 0
-     act_h2 = 0
-     act_h3 = 0
-     act_ca = 0
-     act_csa = 0
-     act_cg = 1
-     act_cr = 0
-     act_cp = 0
-     act_cn = 0
-     act_rn = 0
-     act_lm = 0
-     act_zl = 0
-     act_c = 0
-     act_s = 0
-     act_sf = 0
-     act_f = 0
+     set_flags(0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0)
      f_fail = game.build_gun()
     end
   end
   if txt=="cr" then
     if game.is_lab() == 1 then
-    act_z1 = 0
-    act_z2 = 0
      txt = ""
-     f_wlc = 0
-     act_rs = 0
-     act_h1 = 0
-     act_h2 = 0
-     act_h3 = 0
-     act_ca = 0
-     act_csa = 0
-     act_cg = 0
-     act_cr = 1
-     act_cp = 0
-     act_cn = 0
-     act_rn = 0
-     act_lm = 0
-     act_zl = 0
-     act_c = 0
-     act_s = 0
-     act_sf = 0
-     act_f = 0
+     set_flags(0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0)
      f_fail = game.build_rocket()
     end
   end
   if txt=="cp" then
     if game.is_lab() == 1 then
-    act_z1 = 0
-    act_z2 = 0
      txt = ""
-     f_wlc = 0
-     act_rs = 0
-     act_h1 = 0
-     act_h2 = 0
-     act_h3 = 0
-     act_ca = 0
-     act_csa = 0
-     act_cg = 0
-     act_cr = 0
-     act_cp = 1
-     act_cn = 0
-     act_rn = 0
-     act_lm = 0
-     act_zl = 0
-     act_c = 0
-     act_s = 0
-     act_sf = 0
-     act_f = 0
+     set_flags(0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0)
      f_fail = game.build_plazma()
     end
   end
    if txt=="cn" then
     if game.is_lab() == 1 then
-    act_z1 = 0
-    act_z2 = 0
      txt = ""
-     f_wlc = 0
-     act_rs = 0
-     act_h1 = 0
-     act_h2 = 0
-     act_h3 = 0
-     act_ca = 0
-     act_csa = 0
-     act_cg = 0
-     act_cr = 0
-     act_cp = 0
-     act_cn = 1
-     act_rn = 0
-     act_lm = 0
-     act_zl = 0
-     act_c = 0
-     act_s = 0
-     act_sf = 0
-     act_f = 0
+     set_flags(0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0)
      f_fail = game.build_neurosynaptic()
     end
   end
   if txt=="lm" then
     if game.is_home() == 1 then
-    act_z1 = 0
-    act_z2 = 0
      txt = ""
-     f_wlc = 0
-     act_rs = 0
-     act_h1 = 0
-     act_h2 = 0
-     act_h3 = 0
-     act_ca = 0
-     act_csa = 0
-     act_cg = 0
-     act_cr = 0
-     act_cp = 0
-     act_cn = 0
-     act_rn = 0
-     act_lm = 1
-     act_zl = 0
-     act_c = 0
-     act_s = 0
-     act_sf = 0
-     act_f = 0
+     set_flags(0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0)
      f_fail = game.lvlup_lm()
     end
   end
   if txt=="z1" then
     if game.is_home() == 1 then
-    act_z1 = 0
-    act_z2 = 0
      txt = ""
-     f_wlc = 0
-     act_rs = 0
-     act_h1 = 0
-     act_h2 = 0
-     act_h3 = 0
-     act_ca = 0
-     act_csa = 0
-     act_cg = 0
-     act_cr = 0
-     act_cp = 0
-     act_cn = 0
-     act_rn = 0
-     act_lm = 0
-     act_zl = 1
-     act_c = 0
-     act_s = 0
-     act_sf = 0
-     act_f = 0
+     set_flags(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0)
      game.locate_zone(1)
     end
   end
   if txt=="z2" then
     if game.is_home() == 1 then
-    act_z1 = 0
-    act_z2 = 0
      txt = ""
-     f_wlc = 0
-     act_rs = 0
-     act_h1 = 0
-     act_h2 = 0
-     act_h3 = 0
-     act_ca = 0
-     act_csa = 0
-     act_cg = 0
-     act_cr = 0
-     act_cp = 0
-     act_cn = 0
-     act_rn = 0
-     act_lm = 0
-     act_zl = 1
-     act_c = 0
-     act_s = 0
-     act_sf = 0
-     act_f = 0
+     set_flags(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0)
      game.locate_zone(2)
     end
   end
   if txt=="z3" then
     if game.is_home() == 1 then
-    act_z1 = 0
-    act_z2 = 0
      txt = ""
-     f_wlc = 0
-     act_rs = 0
-     act_h1 = 0
-     act_h2 = 0
-     act_h3 = 0
-     act_ca = 0
-     act_csa = 0
-     act_cg = 0
-     act_cr = 0
-     act_cp = 0
-     act_cn = 0
-     act_rn = 0
-     act_lm = 0
-     act_zl = 1
-     act_c = 0
-     act_s = 0
-     act_sf = 0
-     act_f = 0
+     set_flags(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0)
      game.locate_zone(3)
     end
   end
   if txt=="z4" then
     if game.is_home() == 1 then
-    act_z1 = 0
-    act_z2 = 0
      txt = ""
-     f_wlc = 0
-     act_rs = 0
-     act_h1 = 0
-     act_h2 = 0
-     act_h3 = 0
-     act_ca = 0
-     act_csa = 0
-     act_cg = 0
-     act_cr = 0
-     act_cp = 0
-     act_cn = 0
-     act_rn = 0
-     act_lm = 0
-     act_zl = 1
-     act_c = 0
-     act_s = 0
-     act_sf = 0
-     act_f = 0
+     set_flags(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0)
      game.locate_zone(4)
     end
   end
   if txt=="z5" then
     if game.is_home() == 1 then
-    act_z1 = 0
-    act_z2 = 0
      txt = ""
-     f_wlc = 0
-     act_rs = 0
-     act_h1 = 0
-     act_h2 = 0
-     act_h3 = 0
-     act_ca = 0
-     act_csa = 0
-     act_cg = 0
-     act_cr = 0
-     act_cp = 0
-     act_cn = 0
-     act_rn = 0
-     act_lm = 0
-     act_zl = 1
-     act_c = 0
-     act_s = 0
-     act_sf = 0
-     act_f = 0
+     set_flags(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0)
      game.locate_zone(5)
     end
   end
   if txt=="c" then
     if game.is_zone() == 1 then
-     act_z1 = 0
-     act_z2 = 0
      txt = ""
-     f_wlc = 0
-     act_rs = 0
-     act_h1 = 0
-     act_h2 = 0
-     act_h3 = 0
-     act_ca = 0
-     act_csa = 0
-     act_cg = 0
-     act_cr = 0
-     act_cp = 0
-     act_cn = 0
-     act_rn = 0
-     act_lm = 0
-     act_zl = 0
-     act_c = 1
-     act_s = 0
-     act_sf = 0
-     act_f = 0
+     set_flags(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0)
      f_fail = game.call_unit()
     end
   end
   if txt=="s" then
-     act_z1 = 0
-     act_z2 = 0
      txt = ""
-     f_wlc = 0
-     act_rs = 0
-     act_h1 = 0
-     act_h2 = 0
-     act_h3 = 0
-     act_ca = 0
-     act_csa = 0
-     act_cg = 0
-     act_cr = 0
-     act_cp = 0
-     act_cn = 0
-     act_rn = 0
-     act_lm = 0
-     act_zl = 0
-     act_c = 0
-     act_s = 1
-     act_sf = 0
-     act_f = 0
+     set_flags(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0)
      game.save()
   end
   if txt=="f" then
    if game.check_unit() == true then 
     if game.is_zone() == 1 then
       if game.is_fight_mode() == 0 then
-       act_z1 = 0
-       act_z2 = 0
        txt = ""
-       f_wlc = 0
-       act_rs = 0
-       act_h1 = 0
-       act_h2 = 0
-       act_h3 = 0
-       act_ca = 0
-       act_csa = 0
-       act_cg = 0
-       act_cr = 0
-       act_cp = 0
-       act_cn = 0
-       act_rn = 0
-       act_lm = 0
-       act_zl = 0
-       act_c = 0
-       act_s = 0
-       act_sf = 1
-       act_f = 0
        f_fail = -1
+       set_flags(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0)
        game.set_start_fight_mode()
       end
     end
    end
    if game.check_unit() == false then
       if game.is_zone() == 1 then
-       act_z1 = 0
-       act_z2 = 0
        txt = ""
-       f_wlc = 0
-       act_rs = 0
-       act_h1 = 0
-       act_h2 = 0
-       act_h3 = 0
-       act_ca = 0
-       act_csa = 0
-       act_cg = 0
-       act_cr = 0
-       act_cp = 0
-       act_cn = 0
-       act_rn = 0
-       act_lm = 0
-       act_zl = 0
-       act_c = 0
-       act_s = 0
-       act_sf = 1
-       act_f = 0
+       set_flags(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0)
        f_fail = 3
      end
    end
