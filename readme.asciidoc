@@ -1,4 +1,4 @@
-NecroSilence Casual
+﻿NecroSilence Casual Windows port
 
 image:https://github.com/unStatiK/NS/raw/master/ns.jpeg[]
  

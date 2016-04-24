@@ -1,9 +1,11 @@
-#include <lua.h>
-#include <lualib.h>
-#include <lauxlib.h>
+extern "C"
+{
 #include <time.h>
-#include "player.h"
+#include "lua.h"
+#include "lauxlib.h"
 #include "game.h"
+#include "player.h"
+}
 
 struct player *pl;
 struct zone *zones;
@@ -189,7 +191,7 @@ static int load (lua_State *L)
 	int sz;
     int fu;
     fread(&sz,sizeof(int),1,out);
-    pl->name = malloc(sz);
+    pl->name = (char*)malloc(sz);
     fread(pl->name,sz,1,out);
     pl->name[sz] = '\0';
     fread(&pl->hp,sizeof(int),1,out);
@@ -988,7 +990,17 @@ static int get_zone_unit_dmg(lua_State *L){
     return 1;
 }
 
-int luaopen_game(lua_State *L)
+//test
+static int hello_hook (lua_State *L)
+{
+    char *str = "hello from NSlib and again!";	
+	lua_pushstring(L, str);
+	return 1;
+}
+
+extern "C"
+{
+__declspec(dllexport) int luaopen_nslib(lua_State *L)
 {
 static const luaL_reg Map [] = {{"get_name_pl", get_name_pl}, 
                                 {"get_hp_pl",get_hp_pl},{"get_maxhp_pl",get_maxhp_pl}, 
@@ -1016,9 +1028,11 @@ static const luaL_reg Map [] = {{"get_name_pl", get_name_pl},
                                 {"get_unit_damage",get_unit_damage},{"get_enemy_damage",get_enemy_damage},
                                 {"check_finish_fight",check_finish_fight},{"check_win_fight",check_win_fight},{"check_type_fight",check_type_fight},
                                 {"fight",fight},{"set_finish_fight",set_finish_fight},
+								{ "hello", hello_hook },
                                {NULL,NULL}};
-luaL_register(L, "game", Map);
+luaL_register(L, "nslib", Map);
 return 1;
+}
 }
 
 void genzone(){
