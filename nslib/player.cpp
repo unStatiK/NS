@@ -1,4 +1,6 @@
+extern "C" {
 #include "player.h"
+}
 
 void new_ch (struct player *pl,const char *name){
     pl->hp = 100;
@@ -7,12 +9,15 @@ void new_ch (struct player *pl,const char *name){
     pl->l_m = 0;
     pl->r_necro = 0;
     pl->money = 0;
+	pl->max_money = 100000000;
     int len = strlen(name);
-    pl->name = malloc(len+1);
+    pl->name = (char*)malloc(len+1);
     strcpy(pl->name,name);
     pl->name[len] = '\0';
     pl->exp_lc = 0;
     pl->exp_lm = 0;
+	pl->max_exp_lc = 1000;
+	pl->max_exp_lm = 1000;
     pl->unit = NULL;
 }
 

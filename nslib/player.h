@@ -8,10 +8,13 @@ struct player{
      int max_hp;
      int exp_lc;
      int exp_lm;
+	 int max_exp_lc;
+     int max_exp_lm;
      int l_c;
      int l_m;
      int r_necro;
      int money;
+	 int max_money;
      struct sum_unit *unit;
 };
 struct sum_unit{

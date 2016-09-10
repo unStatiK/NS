@@ -1,9 +1,11 @@
-#include <lua.h>
-#include <lualib.h>
-#include <lauxlib.h>
+extern "C"
+{
 #include <time.h>
-#include "player.h"
+#include "lua.h"
+#include "lauxlib.h"
 #include "game.h"
+#include "player.h"
+}
 
 struct player *pl;
 struct zone *zones;
@@ -163,7 +165,7 @@ static int init(lua_State *L)
 	fwrite(&pl->l_c,sizeof(int),1,tf);
 	fwrite(&pl->l_m,sizeof(int),1,tf);
 	fwrite(&pl->money,sizeof(int),1,tf);
-  fwrite(&pl->r_necro,sizeof(int),1,tf);
+	fwrite(&pl->r_necro,sizeof(int),1,tf);
     int fu = 0;
     fwrite(&fu,sizeof(int),1,tf);
 	fclose(tf);
@@ -189,7 +191,7 @@ static int load (lua_State *L)
 	int sz;
     int fu;
     fread(&sz,sizeof(int),1,out);
-    pl->name = malloc(sz);
+    pl->name = (char*)malloc(sz);
     fread(pl->name,sz,1,out);
     pl->name[sz] = '\0';
     fread(&pl->hp,sizeof(int),1,out);
@@ -199,7 +201,7 @@ static int load (lua_State *L)
 	fread(&pl->l_c,sizeof(int),1,out);
 	fread(&pl->l_m,sizeof(int),1,out);
 	fread(&pl->money,sizeof(int),1,out);
-  fread(&pl->r_necro,sizeof(int),1,out);  
+	fread(&pl->r_necro,sizeof(int),1,out);  
     fread(&fu,sizeof(int),1,out);
      if(fu == 0){
         pl->unit = NULL;
@@ -450,12 +452,16 @@ static int call_unit(lua_State *L){
             pl->unit->bm->plz = 0;
             pl->unit->bm->nsnp = 0;
             if(f_first_c == 1){
-               pl->exp_lc = pl->exp_lc + 30;
-               check_levelup(pl,pl->exp_lc);
+				if((pl->exp_lc + 30) <= pl->max_exp_lc ) {
+						pl->exp_lc = pl->exp_lc + 30;
+						check_levelup(pl,pl->exp_lc);
+				}
             }
             if(pl->unit != NULL && f_first_c != 1 && pl->unit->l_d < r_unit){
-               pl->exp_lc = pl->exp_lc + 30;
-               check_levelup(pl,pl->exp_lc);
+				if((pl->exp_lc + 30) <= pl->max_exp_lc ) {
+					pl->exp_lc = pl->exp_lc + 30;
+					check_levelup(pl,pl->exp_lc);
+				}
             }
             if(type == 1){
               lua_pushinteger(L, 1);
@@ -578,9 +584,15 @@ static int fight(lua_State *L){
                 f_win = 1;
                 f_fight = 0;
                 f_sfight = 0;
-                pl->exp_lc = pl->exp_lc + 40;
-                pl->money = pl->money + 100;
-                pl->exp_lm = pl->exp_lm + 10;
+				if((pl->exp_lc + 40) <= pl->max_exp_lc ) {
+					pl->exp_lc = pl->exp_lc + 40;
+				}
+				if((pl->money + 100) <= pl->max_money) {
+					pl->money = pl->money + 100;
+				}
+				if((pl->exp_lm + 10) <= pl->max_exp_lm ) {
+					pl->exp_lm = pl->exp_lm + 10;
+				}
                 check_levelup(pl,pl->exp_lc);
                 lua_pushinteger(L,1);
             }
@@ -988,7 +1000,9 @@ static int get_zone_unit_dmg(lua_State *L){
     return 1;
 }
 
-int luaopen_game(lua_State *L)
+extern "C"
+{
+__declspec(dllexport) int luaopen_nslib(lua_State *L)
 {
 static const luaL_reg Map [] = {{"get_name_pl", get_name_pl}, 
                                 {"get_hp_pl",get_hp_pl},{"get_maxhp_pl",get_maxhp_pl}, 
@@ -1017,8 +1031,9 @@ static const luaL_reg Map [] = {{"get_name_pl", get_name_pl},
                                 {"check_finish_fight",check_finish_fight},{"check_win_fight",check_win_fight},{"check_type_fight",check_type_fight},
                                 {"fight",fight},{"set_finish_fight",set_finish_fight},
                                {NULL,NULL}};
-luaL_register(L, "game", Map);
+luaL_register(L, "nslib", Map);
 return 1;
+}
 }
 
 void genzone(){

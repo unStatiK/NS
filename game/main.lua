@@ -1,4 +1,4 @@
-require "game"
+require "nslib"
 
 function love.load()
 
@@ -24,8 +24,11 @@ gun  = love.graphics.newImage("gun.png")
 rck  = love.graphics.newImage("rocket.png")
 plz  = love.graphics.newImage("plazma.png")
 brn  = love.graphics.newImage("brain.png")
-main_ = love.graphics.newImage("jack.png")
-love.graphics.setIcon(main_)
+--main_ = love.graphics.newImage("jack.png")
+main_ = love.image.newImageData("jack.png")
+--love.graphics.setIcon(main_)
+love.window.setIcon(main_)
+
 font1 = love.graphics.newFont(24)
 font2 = love.graphics.newFont(20)
 font3 = love.graphics.newFont(16)
@@ -33,7 +36,7 @@ font4 = love.graphics.newFont(10)
 
 end
 
-function love.draw()
+function love.draw()  
   if f_start == 0 then
     love.graphics.setFont(font1)
     love.graphics.print( "NecroSilence" , 200, 100 )
@@ -77,34 +80,34 @@ function love.draw()
     love.graphics.setColor(255, 255, 255)
     love.graphics.draw(zmb,340,5)
 
-    if game.check_unit() == true then
+    if nslib.check_unit() == true then
      love.graphics.draw(al,370,5)
     end
 
-    if game.check_necro() == true then
+    if nslib.check_necro() == true then
      love.graphics.draw(sk,400,5)
     end
 
-    if game.check_arm() == true then
+    if nslib.check_arm() == true then
      love.graphics.draw(c1,430,5)
     end
 
-    if game.check_superarm() == true then
+    if nslib.check_superarm() == true then
      love.graphics.draw(c2,460,7)
     end
-    if game.check_gun() == true then
+    if nslib.check_gun() == true then
      love.graphics.draw(gun,490,5)
     end
 
-    if game.check_rocket() == true then
+    if nslib.check_rocket() == true then
      love.graphics.draw(rck,520,7)
     end
 
-    if game.check_plazma() == true then
+    if nslib.check_plazma() == true then
      love.graphics.draw(plz,550,7)
     end
     
-    if game.check_neurosynaptic() == true then
+    if nslib.check_neurosynaptic() == true then
      love.graphics.draw(brn,585,5)
     end
 
@@ -137,55 +140,55 @@ function love.draw()
       end
 
      love.graphics.setColor(0, 255, 0)
-     plname = game.get_name_pl()
+     plname = nslib.get_name_pl()
      love.graphics.print( "Player : " , 30, 10 )
      love.graphics.setColor(255, 236, 139)
      love.graphics.print( plname , 95, 10 )
      love.graphics.setColor(0, 255, 0)
-     plhp = game.get_hp_pl()
+     plhp = nslib.get_hp_pl()
      love.graphics.print( "HP : "..plhp , 30, 50 )
-     plmaxhp = game.get_maxhp_pl()
+     plmaxhp = nslib.get_maxhp_pl()
      love.graphics.print( "MAX HP : "..plmaxhp , 30, 70 )
-     plLC = game.get_l_c_pl()
+     plLC = nslib.get_l_c_pl()
      love.graphics.print( "L.C. : "..plLC , 30, 90 )
-     plLM = game.get_l_m_pl()
+     plLM = nslib.get_l_m_pl()
      love.graphics.print( "L.M. : "..plLM , 30, 110 )
-     plexpLC = game.get_exp_lc_pl()
+     plexpLC = nslib.get_exp_lc_pl()
      love.graphics.print( "exp L.C. : "..plexpLC , 30, 130 )
-     plexpLM = game.get_exp_lm_pl()
-     love.graphics.print( "exp L.M. : "..plexpLM , 30, 150 )
-     plmoney = game.get_money_pl()
+     plexpLM = nslib.get_exp_lm_pl()
+     love.graphics.print( "exp L.M. : "..plexpLM , 28, 150 )
+     plmoney = nslib.get_money_pl()
      love.graphics.print( "$ : "..plmoney , 30, 170 )
-    if game.check_unit() == true then
+    if nslib.check_unit() == true then
      love.graphics.setColor(255, 255, 255)
      love.graphics.rectangle("line", 20, 230 , 130 ,180)
      love.graphics.setColor(0, 255, 0)
-     unhp = game.get_hp_unit()
+     unhp = nslib.get_hp_unit()
      love.graphics.print( "HP : "..unhp , 30, 240 )
-     unmaxhp = game.get_maxhp_unit()
+     unmaxhp = nslib.get_maxhp_unit()
      love.graphics.print( "MAX HP : "..unmaxhp , 30, 260 )
-     unLD = game.get_ld_unit()
+     unLD = nslib.get_ld_unit()
      love.graphics.print( "L.D. : "..unLD , 30, 280 )
-     undmg = game.get_dmg_unit()
+     undmg = nslib.get_dmg_unit()
      love.graphics.print( "DMG : "..undmg , 30, 300 )
-     unARM = game.get_arm_unit()
+     unARM = nslib.get_arm_unit()
      love.graphics.print( "Arm : "..unARM , 30, 320 )
-     unGUN = game.get_gun_unit()
+     unGUN = nslib.get_gun_unit()
      love.graphics.print( "Gun : "..unGUN , 30, 340 )
-     unPLZ = game.get_plz_unit()
+     unPLZ = nslib.get_plz_unit()
      love.graphics.print( "Plz : "..unPLZ , 30, 360 )
-     unNSNP = game.get_nsnp_unit()
+     unNSNP = nslib.get_nsnp_unit()
      love.graphics.print( "NSNP : "..unNSNP , 30, 380 )
     end
 
      love.graphics.setColor(190, 200, 0)
      love.graphics.print( txt , 165, 555 )
      love.graphics.setColor(119, 136, 153)
-      if game.is_lab() == 1 then
+      if nslib.is_lab() == 1 then
          love.graphics.print( "Master's Lab" , 650, 50 )
       end
-      if game.is_zone() == 1 then
-         love.graphics.print( "Zone "..game.get_locate_id_zone() , 700, 50 )
+      if nslib.is_zone() == 1 then
+         love.graphics.print( "Zone "..nslib.get_locate_id_zone() , 700, 50 )
       end
        if act_z1 == 1 then
           local x1 = 170
@@ -195,19 +198,19 @@ function love.draw()
           local nxt
           local dl
           local dstr
-          nxt = game.get_zones_info()
+          nxt = nslib.get_zones_info()
           while (nxt ~= false) do
-            dl = game.get_zone_min_daemon_LD()
+            dl = nslib.get_zone_min_daemon_LD()
              if dl ~= -1 then
-                dstr = "| Daemons LD : "..dl.." - "..game.get_zone_max_daemon_LD()
+                dstr = "| Daemons LD : "..dl.." - "..nslib.get_zone_max_daemon_LD()
              elseif dl == -1 then 
                 dstr = ""
              end
-            love.graphics.print( "Zone ID : "..game.get_id_zone() , x1, y1 )
-            love.graphics.print( "Units LD : "..game.get_zone_min_unit_LD().." - "..game.get_zone_max_unit_LD()..dstr , x2, y2 )
+            love.graphics.print( "Zone ID : "..nslib.get_id_zone() , x1, y1 )
+            love.graphics.print( "Units LD : "..nslib.get_zone_min_unit_LD().." - "..nslib.get_zone_max_unit_LD()..dstr , x2, y2 )
             y1 = y1 + 40
             y2 = y2 + 40       
-            nxt = game.get_zones_info()
+            nxt = nslib.get_zones_info()
           end
        end
        if act_z2 == 1 then
@@ -221,12 +224,12 @@ function love.draw()
           local type_str
           local dstr
           love.graphics.print("Zone have units : " , 170, 50 )
-          nxt = game.get_zone_info()
+          nxt = nslib.get_zone_info()
           while (nxt ~= false) do
-            hp = game.get_zone_unit_hp()
-            ld = game.get_zone_unit_ld()
-            dmg = game.get_zone_unit_dmg()
-            type_u = game.get_zone_unit_type()
+            hp = nslib.get_zone_unit_hp()
+            ld = nslib.get_zone_unit_ld()
+            dmg = nslib.get_zone_unit_dmg()
+            type_u = nslib.get_zone_unit_type()
              if type_u == 1 then
               type_str = "unit"
              end
@@ -236,7 +239,7 @@ function love.draw()
             dstr = "HP: "..hp.." LD : "..ld.." DMG: "..dmg.." TYPE: "..type_str
             love.graphics.print( dstr , x1, y1 )
             y1 = y1 + 20   
-            nxt = game.get_zone_info()
+            nxt = nslib.get_zone_info()
           end
        end
        if act_rs == 1 then
@@ -344,10 +347,10 @@ function love.draw()
            love.graphics.print( "Fail call !" , 170, 50 )
          end
          if f_fail == 1 then
-           love.graphics.print( "You call unit with LD "..game.get_ld_unit().." !" , 170, 50 )
+           love.graphics.print( "You call unit with LD "..nslib.get_ld_unit().." !" , 170, 50 )
          end
          if f_fail == 2 then
-           love.graphics.print( "You call daemon with LD "..game.get_ld_unit().." !" , 170, 50 )
+           love.graphics.print( "You call daemon with LD "..nslib.get_ld_unit().." !" , 170, 50 )
          end
        end
        if act_s == 1 then
@@ -364,32 +367,32 @@ function love.draw()
           end
        end
        if act_f == 1 then 
-         love.graphics.print( "Fight with enemy LD "..game.get_zone_unit_ld() , 170, 50 )
-          if game.check_finish_fight() ~= 1 and f_cont == 1 then
-          res = game.fight()
+         love.graphics.print( "Fight with enemy LD "..nslib.get_zone_unit_ld() , 170, 50 )
+          if nslib.check_finish_fight() ~= 1 and f_cont == 1 then
+          res = nslib.fight()
            f_cont = 0
           end
           if f_cont == 0 then  
-           love.graphics.print( "damage "..game.get_unit_damage().." to enemy" , 170, 70 )
+           love.graphics.print( "damage "..nslib.get_unit_damage().." to enemy" , 170, 70 )
            if res == 1 then
              love.graphics.print( "Enemy die !" , 170, 90 )
            end
            if res ~= 1 then
-            if game.check_type_fight() == 0 then
-              love.graphics.print( "damage "..game.get_enemy_damage().." enemy to you" , 170, 90 )
+            if nslib.check_type_fight() == 0 then
+              love.graphics.print( "damage "..nslib.get_enemy_damage().." enemy to you" , 170, 90 )
             end
-            if game.check_type_fight() == 1 then
-              love.graphics.print( "damage "..game.get_enemy_damage().." enemy to your unit" , 170, 90 )
+            if nslib.check_type_fight() == 1 then
+              love.graphics.print( "damage "..nslib.get_enemy_damage().." enemy to your unit" , 170, 90 )
             end
            end
-           if res ~= 1 and res ~= -1 and res ~= 0 and game.check_finish_fight() ~= 1 then
+           if res ~= 1 and res ~= -1 and res ~= 0 and nslib.check_finish_fight() ~= 1 then
               love.graphics.print( "Continue fight ? enter y/n " , 170, 110 )
            end
-           if game.check_finish_fight() == 1 and game.get_hp_pl() == 0 then
+           if nslib.check_finish_fight() == 1 and nslib.get_hp_pl() == 0 then
              love.graphics.print( "You die!" , 170, 110 )
-             game.return_home()
+             nslib.return_home()
            end
-           if game.check_finish_fight() == 1 and game.check_unit() == false and  game.get_hp_pl() > 0 then
+           if nslib.check_finish_fight() == 1 and nslib.check_unit() == false and  nslib.get_hp_pl() > 0 then
              love.graphics.print( "Your unit is die !" , 170, 110 )
            end
           end
@@ -460,7 +463,7 @@ function love.keypressed( key, unicode )
         if e == false then
           love.event.push("quit")
         elseif e == true then
-           game.load()
+           nslib.load()
            f_cr = 1
            txt = ""
            f_start = 1
@@ -502,7 +505,7 @@ function love.keypressed( key, unicode )
     end
     if key == "return" and f_en ~= 0 and f_cr == 0 and f_start == 1 then
       if f_l == 0 then
-      game.init(txt)
+      nslib.init(txt)
       f_wlc = 1
       end
       f_cr = 1
@@ -548,34 +551,34 @@ end
 function check_cli()
   txt = trim(txt)
 
-if game.is_fight_mode() == 1 and txt == "y" then 
+if nslib.is_fight_mode() == 1 and txt == "y" then 
      txt = ""
      set_flags(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1)
  end
- if game.is_fight_mode() == 1 and txt == "n" then 
+ if nslib.is_fight_mode() == 1 and txt == "n" then 
      txt = ""
      set_flags(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0)
-     game.set_finish_fight()
+     nslib.set_finish_fight()
  end  
- if game.is_start_fight_mode() == 1 then
-  f_fail = game.check_zone_unit_ld(txt)
+ if nslib.is_start_fight_mode() == 1 then
+  f_fail = nslib.check_zone_unit_ld(txt)
   txt = ""
    if f_fail == 1 then
      set_flags(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1)
-     game.set_fight_mode()
+     nslib.set_fight_mode()
    end
  end
 
- if  game.is_fight_mode() == 0 and game.is_start_fight_mode() == 0 then
+ if  nslib.is_fight_mode() == 0 and nslib.is_start_fight_mode() == 0 then
   if txt=="q" then
      love.event.push("quit")
   end
   if txt=="z" then
     txt = ""
-    if game.is_home() == 1 then
+    if nslib.is_home() == 1 then
      set_flags(1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
     end
-    if game.is_zone() == 1 then
+    if nslib.is_zone() == 1 then
      set_flags(0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
     end 
   end
@@ -584,152 +587,152 @@ if game.is_fight_mode() == 1 and txt == "y" then
     set_flags(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
   end
   if txt=="rs" then
-    if game.is_home() == 1 then
+    if nslib.is_home() == 1 then
      txt = ""
      set_flags(0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
-     game.restore()
+     nslib.restore()
     end
   end
   if txt=="rn" then
-    if game.is_home() == 1 then
+    if nslib.is_home() == 1 then
      txt = ""
      set_flags(0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0)
-     f_fail = game.read_necro()
+     f_fail = nslib.read_necro()
     end
   end
   if txt=="cb" then
-   if game.is_home() == 1 then
+   if nslib.is_home() == 1 then
     txt = ""
     set_flags(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
-    game.into_lab()
+    nslib.into_lab()
    end
   end
   if txt=="r" then
     txt = ""
     set_flags(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
-    game.return_home()
+    nslib.return_home()
   end
   if txt=="h" then
      txt = ""
-    if game.is_home() == 1 then
+    if nslib.is_home() == 1 then
      set_flags(0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
     end
-    if game.is_lab() == 1 then
+    if nslib.is_lab() == 1 then
      set_flags(0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
     end
-    if game.is_zone() == 1 then
+    if nslib.is_zone() == 1 then
      set_flags(0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
     end
   end
   if txt=="ca" then
-    if game.is_lab() == 1 then
+    if nslib.is_lab() == 1 then
      txt = ""
      set_flags(0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0)
-     f_fail = game.build_arm()
+     f_fail = nslib.build_arm()
     end
   end
   if txt=="csa" then
-    if game.is_lab() == 1 then
+    if nslib.is_lab() == 1 then
      txt = ""
      set_flags(0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0)
-     f_fail = game.build_superarm()
+     f_fail = nslib.build_superarm()
     end
   end
   if txt=="cg" then
-    if game.is_lab() == 1 then
+    if nslib.is_lab() == 1 then
      txt = ""
      set_flags(0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0)
-     f_fail = game.build_gun()
+     f_fail = nslib.build_gun()
     end
   end
   if txt=="cr" then
-    if game.is_lab() == 1 then
+    if nslib.is_lab() == 1 then
      txt = ""
      set_flags(0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0)
-     f_fail = game.build_rocket()
+     f_fail = nslib.build_rocket()
     end
   end
   if txt=="cp" then
-    if game.is_lab() == 1 then
+    if nslib.is_lab() == 1 then
      txt = ""
      set_flags(0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0)
-     f_fail = game.build_plazma()
+     f_fail = nslib.build_plazma()
     end
   end
    if txt=="cn" then
-    if game.is_lab() == 1 then
+    if nslib.is_lab() == 1 then
      txt = ""
      set_flags(0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0)
-     f_fail = game.build_neurosynaptic()
+     f_fail = nslib.build_neurosynaptic()
     end
   end
   if txt=="lm" then
-    if game.is_home() == 1 then
+    if nslib.is_home() == 1 then
      txt = ""
      set_flags(0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0)
-     f_fail = game.lvlup_lm()
+     f_fail = nslib.lvlup_lm()
     end
   end
   if txt=="z1" then
-    if game.is_home() == 1 then
+    if nslib.is_home() == 1 then
      txt = ""
      set_flags(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0)
-     game.locate_zone(1)
+     nslib.locate_zone(1)
     end
   end
   if txt=="z2" then
-    if game.is_home() == 1 then
+    if nslib.is_home() == 1 then
      txt = ""
      set_flags(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0)
-     game.locate_zone(2)
+     nslib.locate_zone(2)
     end
   end
   if txt=="z3" then
-    if game.is_home() == 1 then
+    if nslib.is_home() == 1 then
      txt = ""
      set_flags(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0)
-     game.locate_zone(3)
+     nslib.locate_zone(3)
     end
   end
   if txt=="z4" then
-    if game.is_home() == 1 then
+    if nslib.is_home() == 1 then
      txt = ""
      set_flags(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0)
-     game.locate_zone(4)
+     nslib.locate_zone(4)
     end
   end
   if txt=="z5" then
-    if game.is_home() == 1 then
+    if nslib.is_home() == 1 then
      txt = ""
      set_flags(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0)
-     game.locate_zone(5)
+     nslib.locate_zone(5)
     end
   end
   if txt=="c" then
-    if game.is_zone() == 1 then
+    if nslib.is_zone() == 1 then
      txt = ""
      set_flags(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0)
-     f_fail = game.call_unit()
+     f_fail = nslib.call_unit()
     end
   end
   if txt=="s" then
      txt = ""
      set_flags(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0)
-     game.save()
+     nslib.save()
   end
   if txt=="f" then
-   if game.check_unit() == true then 
-    if game.is_zone() == 1 then
-      if game.is_fight_mode() == 0 then
+   if nslib.check_unit() == true then 
+    if nslib.is_zone() == 1 then
+      if nslib.is_fight_mode() == 0 then
        txt = ""
        f_fail = -1
        set_flags(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0)
-       game.set_start_fight_mode()
+       nslib.set_start_fight_mode()
       end
     end
    end
-   if game.check_unit() == false then
-      if game.is_zone() == 1 then
+   if nslib.check_unit() == false then
+      if nslib.is_zone() == 1 then
        txt = ""
        set_flags(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0)
        f_fail = 3
