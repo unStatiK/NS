@@ -1,11 +1,12 @@
-extern "C"
-{
+
 #include <time.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include "lua.h"
 #include "lauxlib.h"
 #include "game.h"
 #include "player.h"
-}
+
 
 struct player *pl;
 struct zone *zones;
@@ -150,12 +151,14 @@ static int lvlup_lm(lua_State *L){
 
 static int init(lua_State *L)
 {
+	FILE *tf;
+	int sz = 0;
+	int fu = 0;
 	const char* name = lua_tostring(L,-1);
 	pl = (struct player *) malloc(sizeof(struct player));
-	new_ch(pl,name);
-	FILE *tf;
-	tf=fopen("save.ns","wb");
-	int sz = strlen(pl->name);
+	new_ch(pl,name);	
+	tf=fopen("save.ns","wb");	
+	sz = strlen(pl->name);
 	fwrite(&sz,sizeof(int),1,tf);
 	fwrite(pl->name,sz,1,tf);
 	fwrite(&pl->hp,sizeof(int),1,tf);
@@ -165,8 +168,7 @@ static int init(lua_State *L)
 	fwrite(&pl->l_c,sizeof(int),1,tf);
 	fwrite(&pl->l_m,sizeof(int),1,tf);
 	fwrite(&pl->money,sizeof(int),1,tf);
-	fwrite(&pl->r_necro,sizeof(int),1,tf);
-    int fu = 0;
+	fwrite(&pl->r_necro,sizeof(int),1,tf);    
     fwrite(&fu,sizeof(int),1,tf);
 	fclose(tf);
 
@@ -185,11 +187,11 @@ static int init(lua_State *L)
 
 static int load (lua_State *L)
 {
-	pl = (struct player *) malloc(sizeof(struct player));
 	FILE *out;
+	int sz = 0;
+    int fu = 0;
+	pl = (struct player *) malloc(sizeof(struct player));	
 	out=fopen("save.ns","rb");
-	int sz;
-    int fu;
     fread(&sz,sizeof(int),1,out);
     pl->name = (char*)malloc(sz);
     fread(pl->name,sz,1,out);
@@ -234,8 +236,10 @@ static int load (lua_State *L)
 
 static int save(lua_State *L){
     FILE *tf;
+	int sz = 0;
+	int fu = 0;
     tf=fopen("save.ns","wb");
-    int sz = strlen(pl->name);
+    sz = strlen(pl->name);
     fwrite(&sz,sizeof(int),1,tf);
     fwrite(pl->name,sz,1,tf);
     fwrite(&pl->hp,sizeof(int),1,tf);
@@ -245,8 +249,7 @@ static int save(lua_State *L){
     fwrite(&pl->l_c,sizeof(int),1,tf);
     fwrite(&pl->l_m,sizeof(int),1,tf);
     fwrite(&pl->money,sizeof(int),1,tf);
-    fwrite(&pl->r_necro,sizeof(int),1,tf);
-    int fu;
+    fwrite(&pl->r_necro,sizeof(int),1,tf);    
     if(pl->unit == NULL){
       fu = 0;
       fwrite(&fu,sizeof(int),1,tf);    
@@ -305,7 +308,7 @@ static int into_lab(lua_State *L){
 }
 
 static int locate_zone(lua_State *L){
-    id_z = lua_tonumber(L,1);
+    id_z = (int)lua_tonumber(L,1);
     f_home = 0;
     f_lab = 0;
     f_zone = 1;
@@ -319,11 +322,14 @@ static int locate_zone(lua_State *L){
 
 static int call_unit(lua_State *L){
     int id = id_z;
-    srand(time(NULL));
-    int r_unit;
-    int max_ld;
-    int min_ld;
-    int type;
+	int r_unit = 0;
+    int max_ld = 0;
+    int min_ld = 0;
+    int type = 0;
+	int sum = 0;
+	int max_s = 0;
+	int f_first_c = 0;
+    srand((unsigned int)time(NULL));    
 
     if(id >= 3){
         type = rand() % 2 + 1;
@@ -391,9 +397,8 @@ static int call_unit(lua_State *L){
         }
     }
       
-        int sum = max_ld - min_ld;
-        r_unit = rand() % (sum + 1) + min_ld;
-        int max_s;
+        sum = max_ld - min_ld;
+        r_unit = rand() % (sum + 1) + min_ld;        
       if(type == 1){
         if(pl->l_c < 2){
             max_s = 1;
@@ -432,8 +437,7 @@ static int call_unit(lua_State *L){
                 while(zones->units->unit->l_d != r_unit && zones->units->unit->type != 2){
                  zones->units = zones->units->next;
               }
-            }
-            int f_first_c = 0;
+            }            
             if(pl->unit == NULL){
                 f_first_c = 1;
             }
@@ -540,7 +544,7 @@ static int check_zone_unit_ld(lua_State *L){
 
 
 
-    ld = lua_tonumber(L,1);
+    ld = (int)lua_tonumber(L,1);
           if(ld >= 1 && ld <= 30){
               if(ld >= min_ld && ld <= max_ld){
                    while(zones->units->unit->l_d != ld){
@@ -572,7 +576,7 @@ return 1;
 
 static int fight(lua_State *L){
         
-        srand(time(NULL));
+        srand((unsigned int)time(NULL));
 
         u_dmg = 0;
         u_dmg = pl->unit->dmg + (pl->unit->bm->gun/2) + (pl->unit->bm->nsnp*5);
@@ -802,7 +806,7 @@ static int get_zone_min_unit_LD(lua_State *L){
 }
 
 static int get_zone_max_unit_LD(lua_State *L){
-
+  int f_d = 0;
   if(zones != NULL){
         switch(zones->id){
             case 1: {
@@ -827,8 +831,7 @@ static int get_zone_max_unit_LD(lua_State *L){
             }
             default: break;
         }
-      }
-       int f_d = 0;
+      }       
            while(zones->units->next != NULL){
                 if(zones->units->next->unit->type == 2 ){
                     lua_pushinteger(L, zones->units->unit->l_d); 
@@ -845,7 +848,7 @@ static int get_zone_max_unit_LD(lua_State *L){
 }
 
 static int get_zone_min_daemon_LD(lua_State *L){
-
+  int f_d = 0;
   if(zones != NULL){
         switch(zones->id){
             case 1: {
@@ -870,9 +873,8 @@ static int get_zone_min_daemon_LD(lua_State *L){
             }
             default: break;
         }
-      }
+      }       
 
-        int f_d = 0;
            while(zones->units->next != NULL){
                 if(zones->units->next->unit->type == 2){
                     f_d = 1;
@@ -1000,8 +1002,6 @@ static int get_zone_unit_dmg(lua_State *L){
     return 1;
 }
 
-extern "C"
-{
 __declspec(dllexport) int luaopen_nslib(lua_State *L)
 {
 static const luaL_reg Map [] = {{"get_name_pl", get_name_pl}, 
@@ -1033,7 +1033,6 @@ static const luaL_reg Map [] = {{"get_name_pl", get_name_pl},
                                {NULL,NULL}};
 luaL_register(L, "nslib", Map);
 return 1;
-}
 }
 
 void genzone(){
