@@ -7,6 +7,11 @@
 #include "game.h"
 #include "player.h"
 
+#if defined _WIN32 || defined __CYGWIN__  
+	#define DLL_PUBLIC __declspec(dllexport)
+#else
+	#define DLL_PUBLIC
+#endif
 
 struct player *pl;
 struct zone *zones;
@@ -32,8 +37,8 @@ int f_zone;
 int f_fight;
 int f_sfight;
 int id_z;
-int u_dmg;
-int e_dmg;
+int u_damage;
+int e_damage;
 int f_finish;
 int f_win; 
 int t;
@@ -56,27 +61,27 @@ lua_pushinteger(L, get_max_hp(pl));
 return 1;
 }
 
-static int get_l_c_pl(lua_State *L)
+static int get_call_level_skill_pl(lua_State *L)
 {
-lua_pushinteger(L, get_l_c(pl));
+lua_pushinteger(L, get_call_level_skill(pl));
 return 1;	
 }
 
-static int get_l_m_pl(lua_State *L)
+static int get_mechanics_level_skill_pl(lua_State *L)
 {
-lua_pushinteger(L, get_l_m(pl));
+lua_pushinteger(L, get_mechanics_level_skill(pl));
 return 1;	
 }
 
-static int get_exp_lc_pl(lua_State *L)
+static int get_exp_cl_pl(lua_State *L)
 {
-lua_pushinteger(L, get_exp_lc(pl));
+lua_pushinteger(L, get_exp_cl(pl));
 return 1;	
 }
 
-static int get_exp_lm_pl(lua_State *L)
+static int get_exp_ml_pl(lua_State *L)
 {
-lua_pushinteger(L, get_exp_lm(pl));
+lua_pushinteger(L, get_exp_ml(pl));
 return 1;	
 }
 
@@ -104,21 +109,21 @@ lua_pushinteger(L, get_unit_ld(pl));
 return 1;   
 }
 
-static int get_dmg_unit(lua_State *L)
+static int get_damage_unit(lua_State *L)
 {
-lua_pushinteger(L, get_unit_dmg(pl));
+lua_pushinteger(L, get_unit_damage(pl));
 return 1;   
 }
 
-static int get_arm_unit(lua_State *L)
+static int get_armour_unit(lua_State *L)
 {
-lua_pushinteger(L, get_unit_arm(pl));
+lua_pushinteger(L, get_unit_armour(pl));
 return 1;   
 }
 
-static int get_plz_unit(lua_State *L)
+static int get_plazma_unit(lua_State *L)
 {
-lua_pushinteger(L, get_unit_plz(pl));
+lua_pushinteger(L, get_unit_plazma(pl));
 return 1;   
 }
 
@@ -128,9 +133,9 @@ lua_pushinteger(L, get_unit_gun(pl));
 return 1;   
 }
 
-static int get_nsnp_unit(lua_State *L)
+static int get_neirosynaptic_unit(lua_State *L)
 {
-lua_pushinteger(L, get_unit_nsnp(pl));
+lua_pushinteger(L, get_unit_neirosynaptic(pl));
 return 1;   
 }
 
@@ -140,12 +145,12 @@ static int restore(lua_State *L){
 }
 
 static int read_necro(lua_State *L){
-    lua_pushinteger(L, r_necro(pl));
+    lua_pushinteger(L, read_necronomicon(pl));
     return 1;
 }
 
 static int lvlup_lm(lua_State *L){
-    lua_pushinteger(L, levelup_lm(pl));
+    lua_pushinteger(L, levelup_ml(pl));
     return 1;
 }
 
@@ -156,19 +161,19 @@ static int init(lua_State *L)
 	int fu = 0;
 	const char* name = lua_tostring(L,-1);
 	pl = (struct player *) malloc(sizeof(struct player));
-	new_ch(pl,name);	
+	new_character(pl,name);	
 	tf=fopen("save.ns","wb");	
 	sz = strlen(pl->name);
 	fwrite(&sz,sizeof(int),1,tf);
 	fwrite(pl->name,sz,1,tf);
 	fwrite(&pl->hp,sizeof(int),1,tf);
 	fwrite(&pl->max_hp,sizeof(int),1,tf);
-	fwrite(&pl->exp_lc,sizeof(int),1,tf);
-	fwrite(&pl->exp_lm,sizeof(int),1,tf);
-	fwrite(&pl->l_c,sizeof(int),1,tf);
-	fwrite(&pl->l_m,sizeof(int),1,tf);
+	fwrite(&pl->exp_cl,sizeof(int),1,tf);
+	fwrite(&pl->exp_ml,sizeof(int),1,tf);
+	fwrite(&pl->call_level_skill,sizeof(int),1,tf);
+	fwrite(&pl->mechanics_level_skill,sizeof(int),1,tf);
 	fwrite(&pl->money,sizeof(int),1,tf);
-	fwrite(&pl->r_necro,sizeof(int),1,tf);    
+	fwrite(&pl->read_necronomicon,sizeof(int),1,tf);    
     fwrite(&fu,sizeof(int),1,tf);
 	fclose(tf);
 
@@ -198,26 +203,26 @@ static int load (lua_State *L)
     pl->name[sz] = '\0';
     fread(&pl->hp,sizeof(int),1,out);
     fread(&pl->max_hp,sizeof(int),1,out);
-	fread(&pl->exp_lc,sizeof(int),1,out);
-	fread(&pl->exp_lm,sizeof(int),1,out);
-	fread(&pl->l_c,sizeof(int),1,out);
-	fread(&pl->l_m,sizeof(int),1,out);
+	fread(&pl->exp_cl,sizeof(int),1,out);
+	fread(&pl->exp_ml,sizeof(int),1,out);
+	fread(&pl->call_level_skill,sizeof(int),1,out);
+	fread(&pl->mechanics_level_skill,sizeof(int),1,out);
 	fread(&pl->money,sizeof(int),1,out);
-	fread(&pl->r_necro,sizeof(int),1,out);  
+	fread(&pl->read_necronomicon,sizeof(int),1,out);  
     fread(&fu,sizeof(int),1,out);
      if(fu == 0){
         pl->unit = NULL;
      }else if (fu == 1){
-        pl->unit = (struct sum_unit *) malloc(sizeof(struct sum_unit));
+        pl->unit = (struct summoned_unit *) malloc(sizeof(struct summoned_unit));
         fread(&pl->unit->hp,sizeof(int),1,out);
         fread(&pl->unit->max_hp,sizeof(int),1,out);
-        fread(&pl->unit->l_d,sizeof(int),1,out);
-        fread(&pl->unit->dmg,sizeof(int),1,out);
-        pl->unit->bm = (struct biolst *) malloc(sizeof(struct biolst));
-        fread(&pl->unit->bm->arm,sizeof(int),1,out);
-        fread(&pl->unit->bm->plz,sizeof(int),1,out);
-        fread(&pl->unit->bm->gun,sizeof(int),1,out);
-        fread(&pl->unit->bm->nsnp,sizeof(int),1,out);
+        fread(&pl->unit->danger_level,sizeof(int),1,out);
+        fread(&pl->unit->damage,sizeof(int),1,out);
+        pl->unit->ml = (struct mechanics_list *) malloc(sizeof(struct mechanics_list));
+        fread(&pl->unit->ml->armour,sizeof(int),1,out);
+        fread(&pl->unit->ml->plazma,sizeof(int),1,out);
+        fread(&pl->unit->ml->gun,sizeof(int),1,out);
+        fread(&pl->unit->ml->neirosynaptic,sizeof(int),1,out);
      }
     fclose(out);
 
@@ -244,12 +249,12 @@ static int save(lua_State *L){
     fwrite(pl->name,sz,1,tf);
     fwrite(&pl->hp,sizeof(int),1,tf);
     fwrite(&pl->max_hp,sizeof(int),1,tf);
-    fwrite(&pl->exp_lc,sizeof(int),1,tf);
-    fwrite(&pl->exp_lm,sizeof(int),1,tf);
-    fwrite(&pl->l_c,sizeof(int),1,tf);
-    fwrite(&pl->l_m,sizeof(int),1,tf);
+    fwrite(&pl->exp_cl,sizeof(int),1,tf);
+    fwrite(&pl->exp_ml,sizeof(int),1,tf);
+    fwrite(&pl->call_level_skill,sizeof(int),1,tf);
+    fwrite(&pl->mechanics_level_skill,sizeof(int),1,tf);
     fwrite(&pl->money,sizeof(int),1,tf);
-    fwrite(&pl->r_necro,sizeof(int),1,tf);    
+    fwrite(&pl->read_necronomicon,sizeof(int),1,tf);    
     if(pl->unit == NULL){
       fu = 0;
       fwrite(&fu,sizeof(int),1,tf);    
@@ -258,12 +263,12 @@ static int save(lua_State *L){
       fwrite(&fu,sizeof(int),1,tf);
       fwrite(&pl->unit->hp,sizeof(int),1,tf);
       fwrite(&pl->unit->max_hp,sizeof(int),1,tf);
-      fwrite(&pl->unit->l_d,sizeof(int),1,tf);
-      fwrite(&pl->unit->dmg,sizeof(int),1,tf);
-      fwrite(&pl->unit->bm->arm,sizeof(int),1,tf);
-      fwrite(&pl->unit->bm->plz,sizeof(int),1,tf);
-      fwrite(&pl->unit->bm->gun,sizeof(int),1,tf);
-      fwrite(&pl->unit->bm->nsnp,sizeof(int),1,tf);
+      fwrite(&pl->unit->danger_level,sizeof(int),1,tf);
+      fwrite(&pl->unit->damage,sizeof(int),1,tf);
+      fwrite(&pl->unit->ml->armour,sizeof(int),1,tf);
+      fwrite(&pl->unit->ml->plazma,sizeof(int),1,tf);
+      fwrite(&pl->unit->ml->gun,sizeof(int),1,tf);
+      fwrite(&pl->unit->ml->neirosynaptic,sizeof(int),1,tf);
     }
     fclose(tf);
     return 1;
@@ -400,13 +405,13 @@ static int call_unit(lua_State *L){
         sum = max_ld - min_ld;
         r_unit = rand() % (sum + 1) + min_ld;        
       if(type == 1){
-        if(pl->l_c < 2){
+        if(pl->call_level_skill < 2){
             max_s = 1;
-        }else if(pl->l_c < 3){
+        }else if(pl->call_level_skill < 3){
             max_s = 4;
-         }else if(pl->l_c < 4){
+         }else if(pl->call_level_skill < 4){
             max_s = 8;
-          }else if(pl->l_c < 7){
+          }else if(pl->call_level_skill < 7){
               max_s = 15;
            }else{
                 max_s = 30;
@@ -414,9 +419,9 @@ static int call_unit(lua_State *L){
        }
        
        if(type == 2){
-        if(pl->l_c == 6){
+        if(pl->call_level_skill == 6){
             max_s = 5;
-        }else if(pl->l_c == 7){
+        }else if(pl->call_level_skill == 7){
             max_s = 15;
          }else{
             max_s = 25;
@@ -425,16 +430,16 @@ static int call_unit(lua_State *L){
 
         if(r_unit > max_s){
             lua_pushinteger(L, -1);
-        }else if((type == 2 && pl->r_necro == 0) || (type == 2 && pl->l_c < 6)){
+        }else if((type == 2 && pl->read_necronomicon == 0) || (type == 2 && pl->call_level_skill < 6)){
             lua_pushinteger(L, -1);
         }else{
             if(type == 1){
-              while(zones->units->unit->l_d != r_unit){
+              while(zones->units->unit->danger_level != r_unit){
                  zones->units = zones->units->next;
               }
             }
             if(type == 2){
-                while(zones->units->unit->l_d != r_unit && zones->units->unit->type != 2){
+                while(zones->units->unit->danger_level != r_unit && zones->units->unit->type != 2){
                  zones->units = zones->units->next;
               }
             }            
@@ -442,29 +447,32 @@ static int call_unit(lua_State *L){
                 f_first_c = 1;
             }
             if (pl->unit != NULL){
-                free(pl->unit->bm);
+                free(pl->unit->ml);
                 free(pl->unit);
             }
-            pl->unit = (struct sum_unit *) malloc(sizeof(struct sum_unit));
+            pl->unit = (struct summoned_unit *) malloc(sizeof(struct summoned_unit));
             pl->unit->hp = zones->units->unit->hp;
             pl->unit->max_hp = zones->units->unit->hp;
-            pl->unit->l_d = zones->units->unit->l_d;
-            pl->unit->dmg = zones->units->unit->dmg;
-            pl->unit->bm = (struct biolst *) malloc(sizeof(struct biolst));
-            pl->unit->bm->arm = 0;
-            pl->unit->bm->gun = 0;
-            pl->unit->bm->plz = 0;
-            pl->unit->bm->nsnp = 0;
+            pl->unit->danger_level = zones->units->unit->danger_level;
+            pl->unit->damage = zones->units->unit->damage;
+            pl->unit->ml = (struct mechanics_list *) malloc(sizeof(struct mechanics_list));
+            pl->unit->ml->armour = 0;
+            pl->unit->ml->gun = 0;
+            pl->unit->ml->plazma = 0;
+            pl->unit->ml->neirosynaptic = 0;
+
+  
             if(f_first_c == 1){
-				if((pl->exp_lc + 30) <= pl->max_exp_lc ) {
-						pl->exp_lc = pl->exp_lc + 30;
-						check_levelup(pl,pl->exp_lc);
+				if((pl->exp_cl + 30) <= pl->max_exp_cl ) {
+						pl->exp_cl = pl->exp_cl + 30;
+						check_levelup(pl,pl->exp_cl);
 				}
             }
-            if(pl->unit != NULL && f_first_c != 1 && pl->unit->l_d < r_unit){
-				if((pl->exp_lc + 30) <= pl->max_exp_lc ) {
-					pl->exp_lc = pl->exp_lc + 30;
-					check_levelup(pl,pl->exp_lc);
+
+            if(pl->unit != NULL && f_first_c != 1 && pl->unit->danger_level < r_unit){
+				if((pl->exp_cl + 30) <= pl->max_exp_cl ) {
+					pl->exp_cl = pl->exp_cl + 30;
+					check_levelup(pl,pl->exp_cl);
 				}
             }
             if(type == 1){
@@ -547,12 +555,12 @@ static int check_zone_unit_ld(lua_State *L){
     ld = (int)lua_tonumber(L,1);
           if(ld >= 1 && ld <= 30){
               if(ld >= min_ld && ld <= max_ld){
-                   while(zones->units->unit->l_d != ld){
+                   while(zones->units->unit->danger_level != ld){
                      zones->units = zones->units->next;
                    }
                    enemy.hp = zones->units->unit->hp;
-                   enemy.l_d = zones->units->unit->l_d;
-                   enemy.dmg = zones->units->unit->dmg;
+                   enemy.danger_level = zones->units->unit->danger_level;
+                   enemy.damage = zones->units->unit->damage;
                    enemy.type = zones->units->unit->type;
                    lua_pushinteger(L,1);
         
@@ -565,12 +573,12 @@ static int check_zone_unit_ld(lua_State *L){
     return 1;      
 }
 
-static int get_unit_damage(lua_State *L){
-lua_pushinteger(L,u_dmg);
+static int get_current_unit_damage(lua_State *L){
+lua_pushinteger(L,u_damage);
 return 1;
 }
 static int get_enemy_damage(lua_State *L){
-lua_pushinteger(L,e_dmg);
+lua_pushinteger(L,e_damage);
 return 1;
 }
 
@@ -578,42 +586,42 @@ static int fight(lua_State *L){
         
         srand((unsigned int)time(NULL));
 
-        u_dmg = 0;
-        u_dmg = pl->unit->dmg + (pl->unit->bm->gun/2) + (pl->unit->bm->nsnp*5);
-        e_dmg = 0;
+        u_damage = 0;
+        u_damage = pl->unit->damage + (pl->unit->ml->gun/2) + (pl->unit->ml->neirosynaptic*5);
+        e_damage = 0;
 
-        enemy.hp = enemy.hp - u_dmg;
+        enemy.hp = enemy.hp - u_damage;
             if(enemy.hp <= 0){
                 f_finish = 1;
                 f_win = 1;
                 f_fight = 0;
                 f_sfight = 0;
-				if((pl->exp_lc + 40) <= pl->max_exp_lc ) {
-					pl->exp_lc = pl->exp_lc + 40;
+				if((pl->exp_cl + 40) <= pl->max_exp_cl ) {
+					pl->exp_cl = pl->exp_cl + 40;
 				}
 				if((pl->money + 100) <= pl->max_money) {
 					pl->money = pl->money + 100;
 				}
-				if((pl->exp_lm + 10) <= pl->max_exp_lm ) {
-					pl->exp_lm = pl->exp_lm + 10;
+				if((pl->exp_ml + 10) <= pl->max_exp_ml ) {
+					pl->exp_ml = pl->exp_ml + 10;
 				}
-                check_levelup(pl,pl->exp_lc);
+                check_levelup(pl,pl->exp_cl);
                 lua_pushinteger(L,1);
             }
             if(f_finish != 1){
               t = rand()%2;
               if(t == 0){
-                  e_dmg = enemy.dmg;
-                  pl->hp = pl->hp - enemy.dmg;
+                  e_damage = enemy.damage;
+                  pl->hp = pl->hp - enemy.damage;
               }else{
-                  e_dmg = enemy.dmg - (pl->unit->bm->arm/3) - (pl->unit->bm->plz*2);                 
-                  pl->unit->hp = pl->unit->hp - e_dmg;
+                  e_damage = enemy.damage - (pl->unit->ml->armour/3) - (pl->unit->ml->plazma*2);                 
+                  pl->unit->hp = pl->unit->hp - e_damage;
                }
              if(pl->hp <= 0){
                 pl->hp = 0;
-                free(pl->unit->bm);
+                free(pl->unit->ml);
                 free(pl->unit);
-                pl->unit->bm = NULL;
+                pl->unit->ml = NULL;
                 pl->unit =  NULL;
                 f_finish = 1;
                 f_win = 0;
@@ -623,9 +631,9 @@ static int fight(lua_State *L){
               }
               if(pl->unit != NULL){
                if(pl->unit->hp <= 0){
-                free(pl->unit->bm);
+                free(pl->unit->ml);
                 free(pl->unit);
-                pl->unit->bm = NULL;
+                pl->unit->ml = NULL;
                 pl->unit =  NULL;
                 f_finish = 1;
                 f_win = 0;
@@ -665,7 +673,7 @@ static int check_unit(lua_State *L){
 
 static int check_necro(lua_State *L){
 
-    if(pl->r_necro == 1){
+    if(pl->read_necronomicon == 1){
        lua_pushboolean(L, 1);
     }else{
        lua_pushboolean(L, 0);
@@ -673,9 +681,9 @@ static int check_necro(lua_State *L){
     return 1;
 }
 
-static int check_arm(lua_State *L){
+static int check_armour(lua_State *L){
 
-    if(pl->l_m >= 1){
+    if(pl->mechanics_level_skill >= 1){
        lua_pushboolean(L, 1);
     }else{
        lua_pushboolean(L, 0);
@@ -683,9 +691,9 @@ static int check_arm(lua_State *L){
     return 1;
 }
 
-static int check_superarm(lua_State *L){
+static int check_superarmour(lua_State *L){
 
-    if(pl->l_m >= 2){
+    if(pl->mechanics_level_skill >= 2){
        lua_pushboolean(L, 1);
     }else{
        lua_pushboolean(L, 0);
@@ -695,7 +703,7 @@ static int check_superarm(lua_State *L){
 
 static int check_gun(lua_State *L){
 
-    if(pl->l_m >= 3){
+    if(pl->mechanics_level_skill >= 3){
        lua_pushboolean(L, 1);
     }else{
        lua_pushboolean(L, 0);
@@ -705,7 +713,7 @@ static int check_gun(lua_State *L){
 
 static int check_rocket(lua_State *L){
 
-    if(pl->l_m >= 4){
+    if(pl->mechanics_level_skill >= 4){
        lua_pushboolean(L, 1);
     }else{
        lua_pushboolean(L, 0);
@@ -715,7 +723,7 @@ static int check_rocket(lua_State *L){
 
 static int check_plazma(lua_State *L){
 
-    if(pl->l_m >= 5){
+    if(pl->mechanics_level_skill >= 5){
        lua_pushboolean(L, 1);
     }else{
        lua_pushboolean(L, 0);
@@ -725,7 +733,7 @@ static int check_plazma(lua_State *L){
 
 static int check_neurosynaptic(lua_State *L){
 
-    if(pl->l_m >= 6){
+    if(pl->mechanics_level_skill >= 6){
        lua_pushboolean(L, 1);
     }else{
        lua_pushboolean(L, 0);
@@ -733,13 +741,13 @@ static int check_neurosynaptic(lua_State *L){
     return 1;
 }
 
-static int build_arm(lua_State *L){
-    lua_pushinteger(L,create_armour(pl));
+static int build_armour(lua_State *L){
+    lua_pushinteger(L,create_armourour(pl));
     return 1;
 }
 
-static int build_superarm(lua_State *L){
-    lua_pushinteger(L,create_superarmour(pl));
+static int build_superarmour(lua_State *L){
+    lua_pushinteger(L,create_superarmourour(pl));
     return 1;
 }
 
@@ -801,7 +809,7 @@ static int get_zone_min_unit_LD(lua_State *L){
         }
       }
 
-    lua_pushinteger(L, zones->units->unit->l_d);
+    lua_pushinteger(L, zones->units->unit->danger_level);
 	return 1;
 }
 
@@ -834,14 +842,14 @@ static int get_zone_max_unit_LD(lua_State *L){
       }       
            while(zones->units->next != NULL){
                 if(zones->units->next->unit->type == 2 ){
-                    lua_pushinteger(L, zones->units->unit->l_d); 
+                    lua_pushinteger(L, zones->units->unit->danger_level); 
                     f_d = 1;
                     break;
                 }
               zones->units = zones->units->next;            
            }
            if(f_d == 0){
-             lua_pushinteger(L, zones->units->unit->l_d);
+             lua_pushinteger(L, zones->units->unit->danger_level);
            }
 
     return 1;
@@ -881,7 +889,7 @@ static int get_zone_min_daemon_LD(lua_State *L){
                 }
               zones->units = zones->units->next;            
               if(f_d == 1){
-                    lua_pushinteger(L, zones->units->unit->l_d);
+                    lua_pushinteger(L, zones->units->unit->danger_level);
                     break;
               }
            }
@@ -924,7 +932,7 @@ static int get_zone_max_daemon_LD(lua_State *L){
             if(zones->units->unit->type == 1){
               lua_pushinteger(L, -1);
             }else{
-              lua_pushinteger(L, zones->units->unit->l_d); 
+              lua_pushinteger(L, zones->units->unit->danger_level); 
             }
     return 1;
 }
@@ -988,7 +996,7 @@ static int get_zone_unit_hp(lua_State *L){
 }
 
 static int get_zone_unit_ld(lua_State *L){    
-    lua_pushinteger(L, zones->units->unit->l_d); 
+    lua_pushinteger(L, zones->units->unit->danger_level); 
     return 1;
 }
 
@@ -997,37 +1005,37 @@ static int get_zone_unit_type(lua_State *L){
     return 1;
 }
 
-static int get_zone_unit_dmg(lua_State *L){    
-    lua_pushinteger(L, zones->units->unit->dmg); 
+static int get_zone_unit_damage(lua_State *L){    
+    lua_pushinteger(L, zones->units->unit->damage); 
     return 1;
 }
 
-__declspec(dllexport) int luaopen_nslib(lua_State *L)
+DLL_PUBLIC int luaopen_nslib(lua_State *L)
 {
 static const luaL_reg Map [] = {{"get_name_pl", get_name_pl}, 
                                 {"get_hp_pl",get_hp_pl},{"get_maxhp_pl",get_maxhp_pl}, 
-                                {"get_l_c_pl",get_l_c_pl},{"get_l_m_pl",get_l_m_pl}, 
-                                {"get_exp_lc_pl",get_exp_lc_pl},{"get_exp_lm_pl",get_exp_lm_pl}, 
+                                {"get_call_level_skill_pl",get_call_level_skill_pl},{"get_mechanics_level_skill_pl",get_mechanics_level_skill_pl}, 
+                                {"get_exp_cl_pl",get_exp_cl_pl},{"get_exp_ml_pl",get_exp_ml_pl}, 
                                 {"get_money_pl",get_money_pl},{"init",init} ,{"load",load},
                                 {"get_zones_info" , get_zones_info } , {"get_id_zone",get_id_zone},
                                 {"get_zone_min_unit_LD",get_zone_min_unit_LD,},{"get_zone_max_unit_LD",get_zone_max_unit_LD},
                                 {"get_zone_min_daemon_LD",get_zone_min_daemon_LD},{"get_zone_max_daemon_LD",get_zone_max_daemon_LD},
                                 {"is_home",is_home},{"restore",restore},{"check_unit",check_unit},{"check_necro",check_necro},
-                                {"check_arm",check_arm},{"check_superarm",check_superarm},{"check_gun",check_gun},
+                                {"check_armour",check_armour},{"check_superarmour",check_superarmour},{"check_gun",check_gun},
                                 {"check_rocket",check_rocket},{"check_plazma",check_plazma},{"check_neurosynaptic",check_neurosynaptic},
-                                {"is_lab",is_lab},{"return_home",return_home},{"into_lab",into_lab},{"build_arm",build_arm},
-                                {"build_superarm",build_superarm},{"build_rocket",build_rocket},{"build_gun",build_gun},
+                                {"is_lab",is_lab},{"return_home",return_home},{"into_lab",into_lab},{"build_armour",build_armour},
+                                {"build_superarmour",build_superarmour},{"build_rocket",build_rocket},{"build_gun",build_gun},
                                 {"build_plazma",build_plazma},{"build_neurosynaptic",build_neurosynaptic},{"read_necro",read_necro},
                                 {"lvlup_lm",lvlup_lm},{"locate_zone",locate_zone},{"get_locate_id_zone",get_locate_id_zone},
-                                {"is_zone",is_zone},{"get_zone_info",get_zone_info},{"get_zone_unit_dmg",get_zone_unit_dmg},
+                                {"is_zone",is_zone},{"get_zone_info",get_zone_info},{"get_zone_unit_damage",get_zone_unit_damage},
                                 {"get_zone_unit_hp",get_zone_unit_hp},{"get_zone_unit_ld",get_zone_unit_ld},
                                 {"get_zone_unit_type",get_zone_unit_type},{"call_unit",call_unit},{"get_hp_unit",get_hp_unit},
-                                {"get_ld_unit",get_ld_unit},{"get_dmg_unit",get_dmg_unit},{"get_arm_unit",get_arm_unit},
-                                {"get_plz_unit",get_plz_unit},{"get_gun_unit",get_gun_unit},{"get_nsnp_unit",get_nsnp_unit},
+                                {"get_ld_unit",get_ld_unit},{"get_damage_unit",get_damage_unit},{"get_armour_unit",get_armour_unit},
+                                {"get_plazma_unit",get_plazma_unit},{"get_gun_unit",get_gun_unit},{"get_neirosynaptic_unit",get_neirosynaptic_unit},
                                 {"get_maxhp_unit",get_maxhp_unit},{"save",save},{"is_fight_mode",is_fight_mode},
                                 {"set_fight_mode",set_fight_mode},{"check_zone_unit_ld",check_zone_unit_ld},
                                 {"set_start_fight_mode",set_start_fight_mode},{"is_start_fight_mode",is_start_fight_mode},
-                                {"get_unit_damage",get_unit_damage},{"get_enemy_damage",get_enemy_damage},
+                                {"get_current_unit_damage", get_current_unit_damage},{"get_enemy_damage",get_enemy_damage},
                                 {"check_finish_fight",check_finish_fight},{"check_win_fight",check_win_fight},{"check_type_fight",check_type_fight},
                                 {"fight",fight},{"set_finish_fight",set_finish_fight},
                                {NULL,NULL}};
@@ -1082,48 +1090,48 @@ void genzone(){
 
 void gen_units_zone_I(struct lst_units *lst){
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 1;
-    lst->unit->dmg = 5;
+    lst->unit->danger_level = 1;
+    lst->unit->damage = 5;
     lst->unit->hp = 10;
     lst->unit->type = 1;
     
     lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
     lst = lst->next;
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 2;
-    lst->unit->dmg = 7;
+    lst->unit->danger_level = 2;
+    lst->unit->damage = 7;
     lst->unit->hp = 20;
     lst->unit->type = 1;
     
     lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
     lst = lst->next;
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 3;
-    lst->unit->dmg = 10;
+    lst->unit->danger_level = 3;
+    lst->unit->damage = 10;
     lst->unit->hp = 30;
     lst->unit->type = 1;
     
     lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
     lst = lst->next;
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 4;
-    lst->unit->dmg = 12;
+    lst->unit->danger_level = 4;
+    lst->unit->damage = 12;
     lst->unit->hp = 40;
     lst->unit->type = 1;
     
     lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
     lst = lst->next;
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 5;
-    lst->unit->dmg = 20;
+    lst->unit->danger_level = 5;
+    lst->unit->damage = 20;
     lst->unit->hp = 50;
     lst->unit->type = 1;
     
     lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
     lst = lst->next;
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 6;
-    lst->unit->dmg = 30;
+    lst->unit->danger_level = 6;
+    lst->unit->damage = 30;
     lst->unit->hp = 60;
     lst->unit->type = 1;
     
@@ -1132,48 +1140,48 @@ void gen_units_zone_I(struct lst_units *lst){
 
 void gen_units_zone_II(struct lst_units *lst){
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 7;
-    lst->unit->dmg = 45;
+    lst->unit->danger_level = 7;
+    lst->unit->damage = 45;
     lst->unit->hp = 70;
     lst->unit->type = 1;
 
     lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
     lst = lst->next;
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 8;
-    lst->unit->dmg = 55;
+    lst->unit->danger_level = 8;
+    lst->unit->damage = 55;
     lst->unit->hp = 80;
     lst->unit->type = 1;
 
     lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
     lst = lst->next;
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 9;
-    lst->unit->dmg = 65;
+    lst->unit->danger_level = 9;
+    lst->unit->damage = 65;
     lst->unit->hp = 90;
     lst->unit->type = 1;
     
     lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
     lst = lst->next;
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 10;
-    lst->unit->dmg = 80;
+    lst->unit->danger_level = 10;
+    lst->unit->damage = 80;
     lst->unit->hp = 100;
     lst->unit->type = 1;
     
     lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
     lst = lst->next;
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 11;
-    lst->unit->dmg = 100;
+    lst->unit->danger_level = 11;
+    lst->unit->damage = 100;
     lst->unit->hp = 110;
     lst->unit->type = 1;
     
     lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
     lst = lst->next;
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 12;
-    lst->unit->dmg = 110;
+    lst->unit->danger_level = 12;
+    lst->unit->damage = 110;
     lst->unit->hp = 120;
     lst->unit->type = 1;
     
@@ -1182,112 +1190,112 @@ void gen_units_zone_II(struct lst_units *lst){
 
 void gen_units_zone_III(struct lst_units *lst){
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 13;
-    lst->unit->dmg = 130;
+    lst->unit->danger_level = 13;
+    lst->unit->damage = 130;
     lst->unit->hp = 130;
     lst->unit->type = 1;
 
     lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
     lst = lst->next;
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 14;
-    lst->unit->dmg = 150;
+    lst->unit->danger_level = 14;
+    lst->unit->damage = 150;
     lst->unit->hp = 140;
     lst->unit->type = 1;
 
     lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
     lst = lst->next;
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 15;
-    lst->unit->dmg = 170;
+    lst->unit->danger_level = 15;
+    lst->unit->damage = 170;
     lst->unit->hp = 150;
     lst->unit->type = 1;
 
     lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
     lst = lst->next;
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 16;
-    lst->unit->dmg = 180;
+    lst->unit->danger_level = 16;
+    lst->unit->damage = 180;
     lst->unit->hp = 160;
     lst->unit->type = 1;
     
     lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
     lst = lst->next;
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 17;
-    lst->unit->dmg = 190;
+    lst->unit->danger_level = 17;
+    lst->unit->damage = 190;
     lst->unit->hp = 170;
     lst->unit->type = 1;
     
     lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
     lst = lst->next;
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 18;
-    lst->unit->dmg = 210;
+    lst->unit->danger_level = 18;
+    lst->unit->damage = 210;
     lst->unit->hp = 180;
     lst->unit->type = 1;
     
     lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
     lst = lst->next;
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 1;
-    lst->unit->dmg = 240;
+    lst->unit->danger_level = 1;
+    lst->unit->damage = 240;
     lst->unit->hp = 200;
     lst->unit->type = 2;
     
     lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
     lst = lst->next;
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 2;
-    lst->unit->dmg = 260;
+    lst->unit->danger_level = 2;
+    lst->unit->damage = 260;
     lst->unit->hp = 220;
     lst->unit->type = 2;
     
     lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
     lst = lst->next;
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 3;
-    lst->unit->dmg = 280;
+    lst->unit->danger_level = 3;
+    lst->unit->damage = 280;
     lst->unit->hp = 240;
     lst->unit->type = 2;
     
     lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
     lst = lst->next;
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 4;
-    lst->unit->dmg = 300;
+    lst->unit->danger_level = 4;
+    lst->unit->damage = 300;
     lst->unit->hp = 260;
     lst->unit->type = 2;
     
     lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
     lst = lst->next;
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 5;
-    lst->unit->dmg = 320;
+    lst->unit->danger_level = 5;
+    lst->unit->damage = 320;
     lst->unit->hp = 280;
     lst->unit->type = 2;
     
     lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
     lst = lst->next;
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 6;
-    lst->unit->dmg = 340;
+    lst->unit->danger_level = 6;
+    lst->unit->damage = 340;
     lst->unit->hp = 300;
     lst->unit->type = 2;
     
     lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
     lst = lst->next;
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 7;
-    lst->unit->dmg = 360;
+    lst->unit->danger_level = 7;
+    lst->unit->damage = 360;
     lst->unit->hp = 320;
     lst->unit->type = 2;
     
     lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
     lst = lst->next;
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 8;
-    lst->unit->dmg = 380;
+    lst->unit->danger_level = 8;
+    lst->unit->damage = 380;
     lst->unit->hp = 340;
     lst->unit->type = 2;
     
@@ -1296,128 +1304,128 @@ void gen_units_zone_III(struct lst_units *lst){
 
 void gen_units_zone_IV(struct lst_units *lst){
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 19;
-    lst->unit->dmg = 220;
+    lst->unit->danger_level = 19;
+    lst->unit->damage = 220;
     lst->unit->hp = 190;
     lst->unit->type = 1;
 
     lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
     lst = lst->next;
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 20;
-    lst->unit->dmg = 230;
+    lst->unit->danger_level = 20;
+    lst->unit->damage = 230;
     lst->unit->hp = 200;
     lst->unit->type = 1;
 
     lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
     lst = lst->next;
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 21;
-    lst->unit->dmg = 240;
+    lst->unit->danger_level = 21;
+    lst->unit->damage = 240;
     lst->unit->hp = 210;
     lst->unit->type = 1;
 
     lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
     lst = lst->next;
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 22;
-    lst->unit->dmg = 250;
+    lst->unit->danger_level = 22;
+    lst->unit->damage = 250;
     lst->unit->hp = 220;
     lst->unit->type = 1;
 
     lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
     lst = lst->next;
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 23;
-    lst->unit->dmg = 270;
+    lst->unit->danger_level = 23;
+    lst->unit->damage = 270;
     lst->unit->hp = 230;
     lst->unit->type = 1;
     
     lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
     lst = lst->next;
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 24;
-    lst->unit->dmg = 290;
+    lst->unit->danger_level = 24;
+    lst->unit->damage = 290;
     lst->unit->hp = 240;
     lst->unit->type = 1;
     
     lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
     lst = lst->next;
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 9;
-    lst->unit->dmg = 400;
+    lst->unit->danger_level = 9;
+    lst->unit->damage = 400;
     lst->unit->hp = 360;
     lst->unit->type = 2;
     
     lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
     lst = lst->next;
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 10;
-    lst->unit->dmg = 420;
+    lst->unit->danger_level = 10;
+    lst->unit->damage = 420;
     lst->unit->hp = 380;
     lst->unit->type = 2;
     
     lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
     lst = lst->next;
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 11;
-    lst->unit->dmg = 440;
+    lst->unit->danger_level = 11;
+    lst->unit->damage = 440;
     lst->unit->hp = 400;
     lst->unit->type = 2;
     
     lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
     lst = lst->next;
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 12;
-    lst->unit->dmg = 460;
+    lst->unit->danger_level = 12;
+    lst->unit->damage = 460;
     lst->unit->hp = 420;
     lst->unit->type = 2;
     
     lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
     lst = lst->next;
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 13;
-    lst->unit->dmg = 480;
+    lst->unit->danger_level = 13;
+    lst->unit->damage = 480;
     lst->unit->hp = 440;
     lst->unit->type = 2;
     
     lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
     lst = lst->next;
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 14;
-    lst->unit->dmg = 500;
+    lst->unit->danger_level = 14;
+    lst->unit->damage = 500;
     lst->unit->hp = 460;
     lst->unit->type = 2;
     
     lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
     lst = lst->next;
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 15;
-    lst->unit->dmg = 520;
+    lst->unit->danger_level = 15;
+    lst->unit->damage = 520;
     lst->unit->hp = 480;
     lst->unit->type = 2;
     
     lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
     lst = lst->next;
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 16;
-    lst->unit->dmg = 540;
+    lst->unit->danger_level = 16;
+    lst->unit->damage = 540;
     lst->unit->hp = 500;
     lst->unit->type = 2;
     
     lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
     lst = lst->next;
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 17;
-    lst->unit->dmg = 560;
+    lst->unit->danger_level = 17;
+    lst->unit->damage = 560;
     lst->unit->hp = 520;
     lst->unit->type = 2;
     
     lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
     lst = lst->next;
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 18;
-    lst->unit->dmg = 580;
+    lst->unit->danger_level = 18;
+    lst->unit->damage = 580;
     lst->unit->hp = 540;
     lst->unit->type = 2;
     
@@ -1426,104 +1434,104 @@ void gen_units_zone_IV(struct lst_units *lst){
 
 void gen_units_zone_V(struct lst_units *lst){
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 25;
-    lst->unit->dmg = 300;
+    lst->unit->danger_level = 25;
+    lst->unit->damage = 300;
     lst->unit->hp = 250;
     lst->unit->type = 1;
 
     lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
     lst = lst->next;
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 26;
-    lst->unit->dmg = 320;
+    lst->unit->danger_level = 26;
+    lst->unit->damage = 320;
     lst->unit->hp = 260;
     lst->unit->type = 1;
 
     lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
     lst = lst->next;
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 27;
-    lst->unit->dmg = 330;
+    lst->unit->danger_level = 27;
+    lst->unit->damage = 330;
     lst->unit->hp = 270;
     lst->unit->type = 1;
 
     lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
     lst = lst->next;
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 28;
-    lst->unit->dmg = 350;
+    lst->unit->danger_level = 28;
+    lst->unit->damage = 350;
     lst->unit->hp = 280;
     lst->unit->type = 1;
 
     lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
     lst = lst->next;
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 29;
-    lst->unit->dmg = 370;
+    lst->unit->danger_level = 29;
+    lst->unit->damage = 370;
     lst->unit->hp = 290;
     lst->unit->type = 1;
     
     lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
     lst = lst->next;
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 30;
-    lst->unit->dmg = 400;
+    lst->unit->danger_level = 30;
+    lst->unit->damage = 400;
     lst->unit->hp = 300;
     lst->unit->type = 1;
     
     lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
     lst = lst->next;
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 19;
-    lst->unit->dmg = 600;
+    lst->unit->danger_level = 19;
+    lst->unit->damage = 600;
     lst->unit->hp = 560;
     lst->unit->type = 2;
     
     lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
     lst = lst->next;
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 20;
-    lst->unit->dmg = 620;
+    lst->unit->danger_level = 20;
+    lst->unit->damage = 620;
     lst->unit->hp = 580;
     lst->unit->type = 2;
     
     lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
     lst = lst->next;
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 21;
-    lst->unit->dmg = 640;
+    lst->unit->danger_level = 21;
+    lst->unit->damage = 640;
     lst->unit->hp = 600;
     lst->unit->type = 2;
     
     lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
     lst = lst->next;
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 22;
-    lst->unit->dmg = 660;
+    lst->unit->danger_level = 22;
+    lst->unit->damage = 660;
     lst->unit->hp = 620;
     lst->unit->type = 2;
     
     lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
     lst = lst->next;
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 23;
-    lst->unit->dmg = 680;
+    lst->unit->danger_level = 23;
+    lst->unit->damage = 680;
     lst->unit->hp = 640;
     lst->unit->type = 2;
     
     lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
     lst = lst->next;
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 24;
-    lst->unit->dmg = 700;
+    lst->unit->danger_level = 24;
+    lst->unit->damage = 700;
     lst->unit->hp = 660;
     lst->unit->type = 2;
     
     lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
     lst = lst->next;
     lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->l_d = 25;
-    lst->unit->dmg = 720;
+    lst->unit->danger_level = 25;
+    lst->unit->damage = 720;
     lst->unit->hp = 680;
     lst->unit->type = 2;
     

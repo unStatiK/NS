@@ -11,6 +11,8 @@ f_fail = 0
 pos = 1
 res = 9
 
+f_show_inv = 0
+
 image = love.graphics.newImage("ns.jpeg")
 ico = love.graphics.newImage("skull.png")
 dr = love.graphics.newImage("start.jpeg")
@@ -45,7 +47,18 @@ function love.draw()
     love.graphics.setFont(font4)
     love.graphics.print( "version 0.1 beta" , 10, 580 )   
     love.graphics.draw(image,200,140)
-    love.graphics.setFont(font2)
+    love.graphics.setFont(font2)	
+	
+	love.graphics.setColor(255, 255, 35)
+	local vertices = {400, 375, 400, 425,
+	500, 375, 500, 425,
+	425, 350, 475, 350,
+	425, 450, 475, 450,
+	400, 375, 425, 350,
+	475, 350, 500, 375,
+	400, 425, 425, 450,
+	475, 450, 500, 425}	
+
      if pos == 1 then 
        love.graphics.setColor(150, 0, 0)
        love.graphics.print( "Start" , 550, 190 )
@@ -53,6 +66,8 @@ function love.draw()
        love.graphics.print( "Load" , 550, 215 )
        love.graphics.print( "Exit" , 550, 240 )
        love.graphics.draw(ico,500,185)
+	   love.graphics.setColor(255, 255, 255)
+
      elseif pos == 2 then
         love.graphics.setColor(255, 255, 255)
         love.graphics.print( "Start" , 550, 190 )
@@ -61,6 +76,7 @@ function love.draw()
         love.graphics.setColor(255, 255, 255)
         love.graphics.print( "Exit" , 550, 240 )
         love.graphics.draw(ico,500,210)
+	   love.graphics.setColor(255, 255, 255)
      elseif pos == 3 then 
         love.graphics.setColor(255, 255, 255)
         love.graphics.print( "Start" , 550, 190 )
@@ -76,7 +92,19 @@ function love.draw()
     love.graphics.setColor(255, 255, 255)
     love.graphics.rectangle("line", 190, 198 , 320 ,25)
     love.graphics.draw(dr,190,230)
+
+    if f_show_inv == 1 then
+      draw6rect(460, 300, 250)
+      draw6rect(460, 300, 245)
+      draw6rect(460, 300, 240)
+    end
   elseif f_cr == 1 then
+    if f_show_inv == 1 then
+      draw6rect(460, 300, 250)
+      draw6rect(460, 300, 245)
+      draw6rect(460, 300, 240)
+    end
+
     love.graphics.setColor(255, 255, 255)
     love.graphics.draw(zmb,340,5)
 
@@ -88,11 +116,11 @@ function love.draw()
      love.graphics.draw(sk,400,5)
     end
 
-    if nslib.check_arm() == true then
+    if nslib.check_armour() == true then
      love.graphics.draw(c1,430,5)
     end
 
-    if nslib.check_superarm() == true then
+    if nslib.check_superarmour() == true then
      love.graphics.draw(c2,460,7)
     end
     if nslib.check_gun() == true then
@@ -149,13 +177,13 @@ function love.draw()
      love.graphics.print( "HP : "..plhp , 30, 50 )
      plmaxhp = nslib.get_maxhp_pl()
      love.graphics.print( "MAX HP : "..plmaxhp , 30, 70 )
-     plLC = nslib.get_l_c_pl()
+     plLC = nslib.get_call_level_skill_pl()
      love.graphics.print( "L.C. : "..plLC , 30, 90 )
-     plLM = nslib.get_l_m_pl()
+     plLM = nslib.get_mechanics_level_skill_pl()
      love.graphics.print( "L.M. : "..plLM , 30, 110 )
-     plexpLC = nslib.get_exp_lc_pl()
+     plexpLC = nslib.get_exp_cl_pl()
      love.graphics.print( "exp L.C. : "..plexpLC , 30, 130 )
-     plexpLM = nslib.get_exp_lm_pl()
+     plexpLM = nslib.get_exp_ml_pl()
      love.graphics.print( "exp L.M. : "..plexpLM , 28, 150 )
      plmoney = nslib.get_money_pl()
      love.graphics.print( "$ : "..plmoney , 30, 170 )
@@ -169,15 +197,15 @@ function love.draw()
      love.graphics.print( "MAX HP : "..unmaxhp , 30, 260 )
      unLD = nslib.get_ld_unit()
      love.graphics.print( "L.D. : "..unLD , 30, 280 )
-     undmg = nslib.get_dmg_unit()
-     love.graphics.print( "DMG : "..undmg , 30, 300 )
-     unARM = nslib.get_arm_unit()
+     undamage = nslib.get_damage_unit()
+     love.graphics.print( "damage : "..undamage , 30, 300 )
+     unARM = nslib.get_armour_unit()
      love.graphics.print( "Arm : "..unARM , 30, 320 )
      unGUN = nslib.get_gun_unit()
      love.graphics.print( "Gun : "..unGUN , 30, 340 )
-     unPLZ = nslib.get_plz_unit()
+     unPLZ = nslib.get_plazma_unit()
      love.graphics.print( "Plz : "..unPLZ , 30, 360 )
-     unNSNP = nslib.get_nsnp_unit()
+     unNSNP = nslib.get_neirosynaptic_unit()
      love.graphics.print( "NSNP : "..unNSNP , 30, 380 )
     end
 
@@ -219,7 +247,7 @@ function love.draw()
           local nxt
           local ld
           local hp
-          local dmg
+          local damage
           local type_u
           local type_str
           local dstr
@@ -228,7 +256,7 @@ function love.draw()
           while (nxt ~= false) do
             hp = nslib.get_zone_unit_hp()
             ld = nslib.get_zone_unit_ld()
-            dmg = nslib.get_zone_unit_dmg()
+            damage = nslib.get_zone_unit_damage()
             type_u = nslib.get_zone_unit_type()
              if type_u == 1 then
               type_str = "unit"
@@ -236,7 +264,7 @@ function love.draw()
              if type_u == 2 then
                type_str = "daemon"
              end
-            dstr = "HP: "..hp.." LD : "..ld.." DMG: "..dmg.." TYPE: "..type_str
+            dstr = "HP: "..hp.." LD : "..ld.." damage: "..damage.." TYPE: "..type_str
             love.graphics.print( dstr , x1, y1 )
             y1 = y1 + 20   
             nxt = nslib.get_zone_info()
@@ -358,7 +386,7 @@ function love.draw()
        end
        if act_sf == 1 then
          if f_fail ~= 3 then 
-         love.graphics.print( "enter UNIT L_D for fight" , 170, 50 )
+         love.graphics.print( "enter UNIT danger_level for fight" , 170, 50 )
          elseif f_fail == 3 then
          love.graphics.print( "No UNIT for fight !" , 170, 50 )
          end
@@ -373,7 +401,7 @@ function love.draw()
            f_cont = 0
           end
           if f_cont == 0 then  
-           love.graphics.print( "damage "..nslib.get_unit_damage().." to enemy" , 170, 70 )
+           love.graphics.print( "damage "..nslib.get_current_unit_damage().." to enemy" , 170, 70 )
            if res == 1 then
              love.graphics.print( "Enemy die !" , 170, 90 )
            end
@@ -439,6 +467,26 @@ function love.draw()
   end
 end
 
+function draw6rect(x, y, radius)
+    len = radius / 2
+
+	p1 = y - (len / 2)
+	p2 = y + (len / 2)
+	p3 = x - (len / 2)
+	p4 = x + (len / 2)
+
+	love.graphics.line(x - len, p1 + 1, x - len, p2 - 1)
+	love.graphics.line(x + len, p1 + 1, x + len, p2 - 1)
+
+	love.graphics.line(p3 + 1, y - len, p4 - 1, y - len)
+	love.graphics.line(p3 + 1, y + len, p4 - 1, y + len)
+
+	love.graphics.line(x - len, p1, p3, y - len)
+	love.graphics.line(p4, y - len, x + len, p1)
+
+	love.graphics.line(x - len, p2, p3, y + len)
+	love.graphics.line(x + len, p2, p4, y + len)
+end
 
 function love.mousepressed(x, y, button)
   if button == "l" then
@@ -446,7 +494,15 @@ function love.mousepressed(x, y, button)
   end
 end
 
-function love.keypressed( key, unicode )
+function love.keypressed( key, unicode ) 
+  if key == "i" and f_start == 1 and f_show_inv == 0 then
+     f_show_inv = 1
+     return
+  elseif key == "i" and f_start == 1 and f_show_inv == 1 then
+     f_show_inv = 0
+     return
+  end
+
   if f_start == 0 then
      if key == "up" and pos > 1 then
         pos = pos -1
@@ -628,14 +684,14 @@ if nslib.is_fight_mode() == 1 and txt == "y" then
     if nslib.is_lab() == 1 then
      txt = ""
      set_flags(0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0)
-     f_fail = nslib.build_arm()
+     f_fail = nslib.build_armour()
     end
   end
   if txt=="csa" then
     if nslib.is_lab() == 1 then
      txt = ""
      set_flags(0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0)
-     f_fail = nslib.build_superarm()
+     f_fail = nslib.build_superarmour()
     end
   end
   if txt=="cg" then

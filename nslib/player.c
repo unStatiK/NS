@@ -1,252 +1,280 @@
 #include "player.h"
 
-void new_ch (struct player *pl,const char *name){
+void new_character (struct player *pl, const char *name) 
+{
 	int len = 0;
     pl->hp = 100;
     pl->max_hp = 100;
-    pl->l_c = 1;
-    pl->l_m = 0;
-    pl->r_necro = 0;
+    pl->call_level_skill = 1;
+    pl->mechanics_level_skill = 0;
+    pl->read_necronomicon = 0;
     pl->money = 0;
 	pl->max_money = 100000000;
     len = strlen(name);
     pl->name = (char*)malloc(len+1);
     strcpy(pl->name,name);
     pl->name[len] = '\0';
-    pl->exp_lc = 0;
-    pl->exp_lm = 0;
-	pl->max_exp_lc = 1000;
-	pl->max_exp_lm = 1000;
+    pl->exp_cl = 0;
+    pl->exp_ml = 0;
+	pl->max_exp_cl = 1000;
+	pl->max_exp_ml = 1000;
     pl->unit = NULL;
 }
 
-void check_levelup(struct player *pl,const int exp){
-    if(exp >= 100) pl->l_c = 2;
-    if(exp >= 250) pl->l_c = 3;
-    if(exp >= 450) pl->l_c = 4;
-    if(exp >= 700) pl->l_c = 5;
-    if(exp >= 1050) pl->l_c = 6;
-    if(exp >= 1600) pl->l_c = 7;
-    if(exp >= 2300) pl->l_c = 8;
+void check_levelup(struct player *pl,const int exp)
+{
+    if(exp >= 100) pl->call_level_skill = 2;
+    if(exp >= 250) pl->call_level_skill = 3;
+    if(exp >= 450) pl->call_level_skill = 4;
+    if(exp >= 700) pl->call_level_skill = 5;
+    if(exp >= 1050) pl->call_level_skill = 6;
+    if(exp >= 1600) pl->call_level_skill = 7;
+    if(exp >= 2300) pl->call_level_skill = 8;
 }
 
-void restore_hp(struct player *pl){
+void restore_hp(struct player *pl)
+{
     pl->hp = pl->max_hp;
     if(pl->unit != NULL){
         pl->unit->hp = pl->unit->max_hp;
     }
 }
 
-int get_hp(struct player *pl){
+const int get_hp(struct player *pl)
+{	  	  
     return pl->hp;
 }
 
-int get_max_hp(struct player *pl){
+const int get_max_hp(struct player *pl)
+{
     return pl->max_hp;
 }
 
-int get_l_c(struct player *pl){
-    return pl->l_c;
+int get_call_level_skill(struct player *pl)
+{
+    return pl->call_level_skill;
 }
 
-int get_l_m(struct player *pl){
-    return pl->l_m;
+const int get_mechanics_level_skill(struct player *pl)
+{
+    return pl->mechanics_level_skill;
 }
 
-int get_exp_lc(struct player *pl){
-    return pl->exp_lc;
+const int get_exp_cl(struct player *pl)
+{
+    return pl->exp_cl;
 }
 
-int get_exp_lm(struct player *pl){
-    return pl->exp_lm;
+const int get_exp_ml(struct player *pl)
+{
+    return pl->exp_ml;
 }
 
-const char* get_name(struct player *pl){
+const char* get_name(struct player *pl)
+{
     return pl->name;
 }
 
-int get_money(struct player *pl){
+const int get_money(struct player *pl)
+{
     return pl->money;
 }
 
-int get_unit_hp(struct player *pl){
+const int get_unit_hp(struct player *pl)
+{
   return pl->unit->hp;
 }
 
-int get_unit_maxhp(struct player *pl){
+const int get_unit_maxhp(struct player *pl)
+{
  return pl->unit->max_hp; 
 }
 
-int get_unit_ld(struct player *pl){
-  return pl->unit->l_d;
+const int get_unit_ld(struct player *pl)
+{
+  return pl->unit->danger_level;
 }
 
-int get_unit_dmg(struct player *pl){
-  return pl->unit->dmg;
+const int get_unit_damage(struct player *pl)
+{
+  return pl->unit->damage;
 }
 
-int get_unit_arm(struct player *pl){
-  return pl->unit->bm->arm;
+const int get_unit_armour(struct player *pl)
+{
+  return pl->unit->ml->armour;
 }
 
-int get_unit_plz(struct player *pl){
-  return pl->unit->bm->plz;
+const int get_unit_plazma(struct player *pl)
+{
+  return pl->unit->ml->plazma;
 }
 
-int get_unit_gun(struct player *pl){
-  return pl->unit->bm->gun;
+const int get_unit_gun(struct player *pl)
+{
+  return pl->unit->ml->gun;
 }
 
-int get_unit_nsnp(struct player *pl){
-  return pl->unit->bm->nsnp;
+const int get_unit_neirosynaptic(struct player *pl)
+{
+  return pl->unit->ml->neirosynaptic;
 }
 
-int create_armour(struct player *pl){
-    if(pl->unit == NULL){
+int create_armourour(struct player *pl)
+{
+    if(pl->unit == NULL) {
         return -1;
-    }else{
-        if(pl->l_m >= 1){
-            pl->unit->bm->arm = 55;
+    } else {
+        if(pl->mechanics_level_skill >= 1) {
+            pl->unit->ml->armour = 55;
             return 1;
-        }else{
+        } else {
             return 0;
-         }
+        }
+    }
+}
+
+int create_superarmourour(struct player *pl)
+{
+    if(pl->unit == NULL) {
+        return -1;
+    } else {
+        if(pl->mechanics_level_skill >= 2) {
+            pl->unit->ml->armour = 100;
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+}
+
+int create_gun(struct player *pl)
+{
+    if(pl->unit == NULL) {
+        return -1;
+    } else {
+        if(pl->mechanics_level_skill >= 3) {
+            pl->unit->ml->gun = 70;
+            return 1;
+        } else {
+            return 0;
+        }
      }
 }
 
-int create_superarmour(struct player *pl){
-    if(pl->unit == NULL){
+int create_rockets(struct player *pl)
+{
+    if(pl->unit == NULL) {
         return -1;
-    }else{
-        if(pl->l_m >= 2){
-            pl->unit->bm->arm = 100;
+    } else {
+        if(pl->mechanics_level_skill >= 4) {
+            pl->unit->ml->gun = 150;
             return 1;
-        }else{
+        } else {
             return 0;
-         }
+        }
+    }
+}
+
+int create_plazma(struct player *pl)
+{
+    if(pl->unit == NULL) {
+        return -1;
+    } else {
+        if(pl->mechanics_level_skill >= 5) {
+            pl->unit->ml->plazma = 1;
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+}
+
+int create_neurosynaptic(struct player *pl)
+{
+    if(pl->unit == NULL) {
+        return -1;
+    } else {
+        if(pl->mechanics_level_skill >= 6) {
+            pl->unit->ml->neirosynaptic = 1;
+            return 1;
+        } else {
+            return 0;
+        }
      }
 }
 
-int create_gun(struct player *pl){
-    if(pl->unit == NULL){
-        return -1;
-    }else{
-        if(pl->l_m >= 3){
-            pl->unit->bm->gun = 70;
-            return 1;
-        }else{
-            return 0;
-         }
-     }
-}
-
-int create_rockets(struct player *pl){
-    if(pl->unit == NULL){
-        return -1;
-    }else{
-        if(pl->l_m >= 4){
-            pl->unit->bm->gun = 150;
-            return 1;
-        }else{
-            return 0;
-         }
-     }
-}
-
-int create_plazma(struct player *pl){
-    if(pl->unit == NULL){
-        return -1;
-    }else{
-        if(pl->l_m >= 5){
-            pl->unit->bm->plz = 1;
-            return 1;
-        }else{
-            return 0;
-         }
-     }
-}
-
-int create_neurosynaptic(struct player *pl){
-    if(pl->unit == NULL){
-        return -1;
-    }else{
-        if(pl->l_m >= 6){
-            pl->unit->bm->nsnp = 1;
-            return 1;
-        }else{
-            return 0;
-         }
-     }
-}
-
-int r_necro(struct player *pl){
-    if(pl->l_c >= 5){
-        pl->r_necro = 1;
+int read_necronomicon(struct player *pl)
+{
+    if(pl->call_level_skill >= 5) {
+        pl->read_necronomicon = 1;
         return 1;
-    }else{
+    } else {
         return 0;
-     }
+    }
 }
 
-int levelup_lm(struct player *pl){
-    switch(pl->l_m){
-        case 0:{ if(pl->exp_lm >= 50 && pl->money >= 70){
-                        pl->l_m = 1;
+int levelup_ml(struct player *pl)
+{
+    switch(pl->mechanics_level_skill) {
+
+        case 0: { 
+			if(pl->exp_ml >= 50 && pl->money >= 70) {
+                        pl->mechanics_level_skill = 1;
                         pl->money = pl->money - 70;
                         return 1;
-                 }else{
-                        return 0;
-                  }
-                 break;
+            } else { return 0; }
+            break;
         }
-        case 1:{ if(pl->exp_lm >= 200 && pl->money >= 300){
-                        pl->l_m = 2;
+
+        case 1: { 
+			if(pl->exp_ml >= 200 && pl->money >= 300){
+                        pl->mechanics_level_skill = 2;
                         pl->money = pl->money - 300;
                         return 2;
-                 }else{
-                        return 0;
-                  }
-                 break;
+            } else { return 0; }
+            break;
         }
-        case 2:{ if(pl->exp_lm >= 450 && pl->money >= 465){
-                        pl->l_m = 3;
+
+        case 2: { 
+			if(pl->exp_ml >= 450 && pl->money >= 465){
+                        pl->mechanics_level_skill = 3;
                         pl->money = pl->money - 465;
                         return 3;
-                 }else{
-                        return 0;
-                  }
-                 break;
+            } else { return 0; }
+            break;
         }
-        case 3:{ if(pl->exp_lm >= 750 && pl->money >= 550){
-                        pl->l_m = 4;
+
+        case 3: { 
+			if(pl->exp_ml >= 750 && pl->money >= 550){
+                        pl->mechanics_level_skill = 4;
                         pl->money = pl->money - 550;
                         return 4;
-                 }else{
-                        return 0;
-                  }
-                 break;
+            } else { return 0; }
+            break;
         }
-        case 4:{ if(pl->exp_lm >= 950 && pl->money >= 600){
-                        pl->l_m = 5;
+
+        case 4: { 
+			if(pl->exp_ml >= 950 && pl->money >= 600){
+                        pl->mechanics_level_skill = 5;
                         pl->money = pl->money - 600;
                         return 5;
-                 }else{
-                        return 0;
-                  }
-                 break;
+            } else { return 0; }
+            break;
         }
-        case 5:{ if(pl->exp_lm >= 1100 && pl->money >= 870){
-                        pl->l_m = 6;
+
+        case 5: { 
+			if(pl->exp_ml >= 1100 && pl->money >= 870){
+                        pl->mechanics_level_skill = 6;
                         pl->money = pl->money - 870;
                         return 6;
-                 }else{
-                        return 0;
-                  }
-                 break;
+            } else { return 0; }
+            break;
         }
-        default:{
-                        return 0;
-                        break;
+
+        default: {
+            return 0;
+            break;
         }
     }
 }

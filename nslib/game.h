@@ -9,8 +9,8 @@ struct lst_units{
 };
 struct units{
     int hp;
-    int l_d;
-    int dmg;
+    int danger_level;
+    int damage;
     int type;
 };
 
