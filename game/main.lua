@@ -49,15 +49,7 @@ function love.draw()
     love.graphics.draw(image,200,140)
     love.graphics.setFont(font2)	
 	
-	love.graphics.setColor(255, 255, 35)
-	local vertices = {400, 375, 400, 425,
-	500, 375, 500, 425,
-	425, 350, 475, 350,
-	425, 450, 475, 450,
-	400, 375, 425, 350,
-	475, 350, 500, 375,
-	400, 425, 425, 450,
-	475, 450, 500, 425}	
+	love.graphics.setColor(255, 255, 35)	
 
      if pos == 1 then 
        love.graphics.setColor(150, 0, 0)
