@@ -2,6 +2,7 @@
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include "lua.h"
 #include "lauxlib.h"
 #include "game.h"
@@ -193,36 +194,76 @@ static int init(lua_State *L)
 static int load (lua_State *L)
 {
 	FILE *out;
-	int sz = 0;
+	int32_t sz = 0;
     int fu = 0;
+	int read_bytes;
+	unsigned char buf[4];
+
 	pl = (struct player *) malloc(sizeof(struct player));	
 	out=fopen("save.ns","rb");
-    fread(&sz,sizeof(int),1,out);
+
+	read_bytes = fread(buf, 4, 1, out);
+	sz = buf_to_int(buf);    
+
     pl->name = (char*)malloc(sz);
     fread(pl->name,sz,1,out);
     pl->name[sz] = '\0';
-    fread(&pl->hp,sizeof(int),1,out);
-    fread(&pl->max_hp,sizeof(int),1,out);
-	fread(&pl->exp_cl,sizeof(int),1,out);
-	fread(&pl->exp_ml,sizeof(int),1,out);
-	fread(&pl->call_level_skill,sizeof(int),1,out);
-	fread(&pl->mechanics_level_skill,sizeof(int),1,out);
-	fread(&pl->money,sizeof(int),1,out);
-	fread(&pl->read_necronomicon,sizeof(int),1,out);  
-    fread(&fu,sizeof(int),1,out);
+    
+	read_bytes = fread(buf, 4, 1, out);
+	pl->hp = buf_to_int(buf);
+    
+	read_bytes = fread(buf, 4, 1, out);
+	pl->max_hp = buf_to_int(buf);
+	
+	read_bytes = fread(buf, 4, 1, out);
+	pl->exp_cl = buf_to_int(buf);
+	
+	read_bytes = fread(buf, 4, 1, out);
+	pl->exp_ml = buf_to_int(buf);
+	
+	read_bytes = fread(buf, 4, 1, out);
+	pl->call_level_skill = buf_to_int(buf);
+	
+	read_bytes = fread(buf, 4, 1, out);
+	pl->mechanics_level_skill = buf_to_int(buf);
+	
+	read_bytes = fread(buf, 4, 1, out);
+	pl->money = buf_to_int(buf);
+	
+	read_bytes = fread(buf, 4, 1, out);
+	pl->read_necronomicon = buf_to_int(buf);
+    
+	read_bytes = fread(buf, 4, 1, out);
+	fu = buf_to_int(buf);
+
      if(fu == 0){
         pl->unit = NULL;
      }else if (fu == 1){
-        pl->unit = (struct summoned_unit *) malloc(sizeof(struct summoned_unit));
-        fread(&pl->unit->hp,sizeof(int),1,out);
-        fread(&pl->unit->max_hp,sizeof(int),1,out);
-        fread(&pl->unit->danger_level,sizeof(int),1,out);
-        fread(&pl->unit->damage,sizeof(int),1,out);
-        pl->unit->ml = (struct mechanics_list *) malloc(sizeof(struct mechanics_list));
-        fread(&pl->unit->ml->armour,sizeof(int),1,out);
-        fread(&pl->unit->ml->plazma,sizeof(int),1,out);
-        fread(&pl->unit->ml->gun,sizeof(int),1,out);
-        fread(&pl->unit->ml->neirosynaptic,sizeof(int),1,out);
+        pl->unit = (struct summoned_unit *) malloc(sizeof(struct summoned_unit));        
+		read_bytes = fread(buf, 4, 1, out);
+	    pl->unit->hp = buf_to_int(buf);
+        
+		read_bytes = fread(buf, 4, 1, out);
+    	pl->unit->max_hp = buf_to_int(buf);
+	         
+		read_bytes = fread(buf, 4, 1, out);
+	    pl->unit->danger_level = buf_to_int(buf);
+        
+		read_bytes = fread(buf, 4, 1, out);
+	    pl->unit->damage = buf_to_int(buf);
+
+        pl->unit->ml = (struct mechanics_list *) malloc(sizeof(struct mechanics_list));        
+		read_bytes = fread(buf, 4, 1, out);
+	    pl->unit->ml->armour = buf_to_int(buf);
+        
+		read_bytes = fread(buf, 4, 1, out);
+	    pl->unit->ml->plazma = buf_to_int(buf);
+        
+		read_bytes = fread(buf, 4, 1, out);
+	    pl->unit->ml->gun = buf_to_int(buf);
+        
+		read_bytes = fread(buf, 4, 1, out);
+	    pl->unit->ml->neirosynaptic = buf_to_int(buf);
      }
     fclose(out);
 
@@ -239,39 +280,59 @@ static int load (lua_State *L)
     return 1;
 }
 
-static int save(lua_State *L){
+static int save(lua_State *L) {
     FILE *tf;
 	int sz = 0;
 	int fu = 0;
     tf=fopen("save.ns","wb");
     sz = strlen(pl->name);
-    fwrite(&sz,sizeof(int),1,tf);
-    fwrite(pl->name,sz,1,tf);
-    fwrite(&pl->hp,sizeof(int),1,tf);
-    fwrite(&pl->max_hp,sizeof(int),1,tf);
-    fwrite(&pl->exp_cl,sizeof(int),1,tf);
-    fwrite(&pl->exp_ml,sizeof(int),1,tf);
-    fwrite(&pl->call_level_skill,sizeof(int),1,tf);
-    fwrite(&pl->mechanics_level_skill,sizeof(int),1,tf);
-    fwrite(&pl->money,sizeof(int),1,tf);
-    fwrite(&pl->read_necronomicon,sizeof(int),1,tf);    
-    if(pl->unit == NULL){
-      fu = 0;
-      fwrite(&fu,sizeof(int),1,tf);    
-    }else{
-      fu = 1;  
-      fwrite(&fu,sizeof(int),1,tf);
-      fwrite(&pl->unit->hp,sizeof(int),1,tf);
-      fwrite(&pl->unit->max_hp,sizeof(int),1,tf);
-      fwrite(&pl->unit->danger_level,sizeof(int),1,tf);
-      fwrite(&pl->unit->damage,sizeof(int),1,tf);
-      fwrite(&pl->unit->ml->armour,sizeof(int),1,tf);
-      fwrite(&pl->unit->ml->plazma,sizeof(int),1,tf);
-      fwrite(&pl->unit->ml->gun,sizeof(int),1,tf);
-      fwrite(&pl->unit->ml->neirosynaptic,sizeof(int),1,tf);
+
+	write_int(tf, sz);
+    fwrite(pl->name,sz,1,tf);    
+	write_int(tf, pl->hp);
+	write_int(tf, pl->max_hp); 
+	write_int(tf, pl->exp_cl);    
+	write_int(tf, pl->exp_ml);    
+	write_int(tf, pl->call_level_skill);  
+	write_int(tf, pl->mechanics_level_skill);    
+	write_int(tf, pl->money);    
+	write_int(tf, pl->read_necronomicon);
+
+    if(pl->unit == NULL) {
+      fu = 0;      
+	  write_int(tf, fu);
+    } else {
+      fu = 1;        
+	  write_int(tf, fu);      
+	  write_int(tf, pl->unit->hp);      
+	  write_int(tf, pl->unit->max_hp);      
+	  write_int(tf, pl->unit->danger_level);      
+	  write_int(tf, pl->unit->damage);      
+	  write_int(tf, pl->unit->ml->armour);      
+	  write_int(tf, pl->unit->ml->plazma);      
+	  write_int(tf, pl->unit->ml->gun);      
+	  write_int(tf, pl->unit->ml->neirosynaptic);
     }
     fclose(tf);
     return 1;
+}
+
+static int write_int(FILE *fp, int32_t value) {
+    unsigned char bytes[4];
+	int i = 0;
+    bytes[0] = (value >> 24) & 0xFF;
+    bytes[1] = (value >> 16) & 0xFF;
+    bytes[2] = (value >> 8) & 0xFF;
+    bytes[3] = value & 0xFF;	
+    for(i = 0; i < 4; i++) {
+        fwrite((const void*) & bytes[i], 1, 1, fp);
+    }
+	return 1;
+}
+
+static int32_t buf_to_int(unsigned char buf[]) {
+    int32_t value = (buf[0] << 24) + (buf[1] << 16) + (buf[2] << 8) + buf[3];
+    return value;
 }
 
 static int is_home(lua_State *L){

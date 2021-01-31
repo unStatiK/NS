@@ -26,7 +26,7 @@ struct summoned_unit {
     struct mechanics_list *ml;
 };
 
-struct mechanics_list{
+struct mechanics_list {
     int armour;
     int plazma;
     int gun;
