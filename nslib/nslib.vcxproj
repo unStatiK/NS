@@ -82,13 +82,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="constants.h" />
     <ClInclude Include="game.h" />
+    <ClInclude Include="flags.h" />
     <ClInclude Include="lauxlib.h" />
     <ClInclude Include="lua.h" />
     <ClInclude Include="luaconf.h" />
     <ClInclude Include="player.h" />
+    <ClInclude Include="version.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="flags.c" />
     <ClCompile Include="game.c" />
     <ClCompile Include="player.c" />
   </ItemGroup>

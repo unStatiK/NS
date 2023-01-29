@@ -1,1600 +1,1457 @@
-
 #include <time.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>
+#include "game.h"
+#include "flags.h"
+#include "player.h"
+#include "version.h"
+#include "constants.h"
 #include "lua.h"
 #include "lauxlib.h"
-#include "game.h"
-#include "player.h"
 
-#if defined _WIN32 || defined __CYGWIN__  
-	#define DLL_PUBLIC __declspec(dllexport)
+#if defined _WIN32 || defined _WIN64 || defined __CYGWIN__
+#define DLL_PUBLIC __declspec(dllexport)
 #else
 	#define DLL_PUBLIC
 #endif
 
-struct player *pl;
-struct zone *zones;
-struct zone *z_head;
+#define build_next_unit(UNITS_LIST, DANGER_LEVEL, DAMAGE, HP, TYPE) \
+(UNITS_LIST->next_unit = (struct units*)malloc(sizeof(struct units)), \
+UNITS_LIST = UNITS_LIST->next_unit, build_unit(lst, DANGER_LEVEL, DAMAGE, HP, TYPE))
 
-struct lst_units *l1;
-struct lst_units *l1_head;
-struct lst_units *l2;
-struct lst_units *l2_head;
-struct lst_units *l3;
-struct lst_units *l3_head;
-struct lst_units *l4;
-struct lst_units *l4_head;
-struct lst_units *l5;
-struct lst_units *l5_head;
+struct player* s_player;
+struct zone* zones;
+struct zone* zones_head;
+struct units* zone1_units;
+struct units* zone1_units_head;
+struct units* zone2_units;
+struct units* zone2_units_head;
+struct units* zone3_units;
+struct units* zone3_units_head;
+struct units* zone4_units;
+struct units* zone4_units_head;
+struct units* zone5_units;
+struct units* zone5_units_head;
+struct unit* active_enemy;
 
-struct units enemy;
+int32_t zone_id;
+int32_t current_unit_damage;
+int32_t current_enemy_damage;
+int32_t damage_type;
 
-int f_zi;
-int f_home;
-int f_lab;
-int f_zone;
-int f_fight;
-int f_sfight;
-int id_z;
-int u_damage;
-int e_damage;
-int f_finish;
-int f_win; 
-int t;
-
-static int get_name_pl(lua_State *L)
+static int32_t refresh(lua_State* L)
 {
-lua_pushstring(L, get_name(pl));
-return 1;
-}
-
-static int get_hp_pl(lua_State *L)
-{
-lua_pushinteger(L, get_hp(pl));
-return 1;
-}
-
-static int get_maxhp_pl(lua_State *L)
-{
-lua_pushinteger(L, get_max_hp(pl));
-return 1;
-}
-
-static int get_call_level_skill_pl(lua_State *L)
-{
-lua_pushinteger(L, get_call_level_skill(pl));
-return 1;	
-}
-
-static int get_mechanics_level_skill_pl(lua_State *L)
-{
-lua_pushinteger(L, get_mechanics_level_skill(pl));
-return 1;	
-}
-
-static int get_exp_cl_pl(lua_State *L)
-{
-lua_pushinteger(L, get_exp_cl(pl));
-return 1;	
-}
-
-static int get_exp_ml_pl(lua_State *L)
-{
-lua_pushinteger(L, get_exp_ml(pl));
-return 1;	
-}
-
-static int get_money_pl(lua_State *L)
-{
-lua_pushinteger(L, get_money(pl));
-return 1;	
-}
-
-static int get_hp_unit(lua_State *L)
-{
-lua_pushinteger(L, get_unit_hp(pl));
-return 1;   
-}
-
-static int get_maxhp_unit(lua_State *L)
-{
-lua_pushinteger(L, get_unit_maxhp(pl));
-return 1;   
-}
-
-static int get_ld_unit(lua_State *L)
-{
-lua_pushinteger(L, get_unit_ld(pl));
-return 1;   
-}
-
-static int get_damage_unit(lua_State *L)
-{
-lua_pushinteger(L, get_unit_damage(pl));
-return 1;   
-}
-
-static int get_armour_unit(lua_State *L)
-{
-lua_pushinteger(L, get_unit_armour(pl));
-return 1;   
-}
-
-static int get_plazma_unit(lua_State *L)
-{
-lua_pushinteger(L, get_unit_plazma(pl));
-return 1;   
-}
-
-static int get_gun_unit(lua_State *L)
-{
-lua_pushinteger(L, get_unit_gun(pl));
-return 1;   
-}
-
-static int get_neirosynaptic_unit(lua_State *L)
-{
-lua_pushinteger(L, get_unit_neirosynaptic(pl));
-return 1;   
-}
-
-static int restore(lua_State *L){
-    restore_hp(pl);
+    disable_all_flags();
     return 1;
 }
 
-static int read_necro(lua_State *L){
-    lua_pushinteger(L, read_necronomicon(pl));
+static int32_t get_lib_version(lua_State* L)
+{
+    lua_pushstring(L, NSLIB_VERSION);
     return 1;
 }
 
-static int lvlup_lm(lua_State *L){
-    lua_pushinteger(L, levelup_ml(pl));
+static int32_t get_name_pl(lua_State* L)
+{
+    lua_pushstring(L, get_name(s_player));
     return 1;
 }
 
-static int init(lua_State *L)
+static int32_t get_hp_pl(lua_State* L)
 {
-	FILE *tf;
-	int sz = 0;
-	int fu = 0;
-	const char* name = lua_tostring(L,-1);
-	pl = (struct player *) malloc(sizeof(struct player));
-	new_character(pl,name);	
-	tf=fopen("save.ns","wb");	
-	sz = strlen(pl->name);
-	fwrite(&sz,sizeof(int),1,tf);
-	fwrite(pl->name,sz,1,tf);
-	fwrite(&pl->hp,sizeof(int),1,tf);
-	fwrite(&pl->max_hp,sizeof(int),1,tf);
-	fwrite(&pl->exp_cl,sizeof(int),1,tf);
-	fwrite(&pl->exp_ml,sizeof(int),1,tf);
-	fwrite(&pl->call_level_skill,sizeof(int),1,tf);
-	fwrite(&pl->mechanics_level_skill,sizeof(int),1,tf);
-	fwrite(&pl->money,sizeof(int),1,tf);
-	fwrite(&pl->read_necronomicon,sizeof(int),1,tf);    
-    fwrite(&fu,sizeof(int),1,tf);
-	fclose(tf);
-
-    genzone();
-    f_zi = 1;
-    f_home = 1;
-    f_lab = 0;
-    f_zone = 0;
-    f_fight = 0;
-    f_sfight = 0;
-    f_finish = 1;
-    f_win =0;
-
-	return 1;
+    lua_pushinteger(L, get_hp(s_player));
+    return 1;
 }
 
-static int load (lua_State *L)
+static int32_t get_maxhp_pl(lua_State* L)
 {
-	FILE *out;
-	int32_t sz = 0;
+    lua_pushinteger(L, get_max_hp(s_player));
+    return 1;
+}
+
+static int32_t get_call_level_skill_pl(lua_State* L)
+{
+    lua_pushinteger(L, get_call_level_skill(s_player));
+    return 1;
+}
+
+static int32_t get_mechanics_level_skill_pl(lua_State* L)
+{
+    lua_pushinteger(L, get_mechanics_level_skill(s_player));
+    return 1;
+}
+
+static int32_t get_exp_cl_pl(lua_State* L)
+{
+    lua_pushinteger(L, get_exp_cl(s_player));
+    return 1;
+}
+
+static int32_t get_exp_ml_pl(lua_State* L)
+{
+    lua_pushinteger(L, get_exp_ml(s_player));
+    return 1;
+}
+
+static int32_t get_money_pl(lua_State* L)
+{
+    lua_pushinteger(L, get_money(s_player));
+    return 1;
+}
+
+static int32_t get_hp_unit(lua_State* L)
+{
+    lua_pushinteger(L, get_unit_hp(s_player));
+    return 1;
+}
+
+static int32_t get_maxhp_unit(lua_State* L)
+{
+    lua_pushinteger(L, get_unit_maxhp(s_player));
+    return 1;
+}
+
+static int32_t get_ld_unit(lua_State* L)
+{
+    lua_pushinteger(L, get_unit_ld(s_player));
+    return 1;
+}
+
+static int32_t get_damage_unit(lua_State* L)
+{
+    lua_pushinteger(L, get_unit_damage(s_player));
+    return 1;
+}
+
+static int32_t get_armour_unit(lua_State* L)
+{
+    lua_pushinteger(L, get_unit_armour(s_player));
+    return 1;
+}
+
+static int32_t get_plazma_unit(lua_State* L)
+{
+    lua_pushinteger(L, get_unit_plazma(s_player));
+    return 1;
+}
+
+static int32_t get_gun_unit(lua_State* L)
+{
+    lua_pushinteger(L, get_unit_gun(s_player));
+    return 1;
+}
+
+static int32_t get_neirosynaptic_unit(lua_State* L)
+{
+    lua_pushinteger(L, get_unit_neirosynaptic(s_player));
+    return 1;
+}
+
+static int32_t restore(lua_State* L)
+{
+    restore_hp(s_player);
+    return 1;
+}
+
+static int32_t read_necro(lua_State* L)
+{
+    lua_pushinteger(L, read_necronomicon(s_player));
+    return 1;
+}
+
+static int32_t lvlup_lm(lua_State* L)
+{
+    lua_pushinteger(L, levelup_ml(s_player));
+    return 1;
+}
+
+static int32_t init(lua_State* L)
+{
+    const char* name = lua_tostring(L, -1);
+    s_player = (struct player*)malloc(sizeof(struct player));
+    new_character(s_player, name);
+    save_state();
+    generate_zones();
+    enable_flags(SHOW_ZONE_INFO_FLAG | AT_HOME_FLAG | END_FIGHT_PHASE_FLAG);
+
+    return 1;
+}
+
+static int32_t load(lua_State* L)
+{
+    FILE* out;
+    int32_t sz = 0;
     int fu = 0;
-	int read_bytes;
-	unsigned char buf[4];
+    unsigned char buf[4];
 
-	pl = (struct player *) malloc(sizeof(struct player));	
-	out=fopen("save.ns","rb");
+    s_player = (struct player*)malloc(sizeof(struct player));
+    out = fopen("save.ns", "rb");
 
-	read_bytes = fread(buf, 4, 1, out);
-	sz = buf_to_int(buf);    
+    fread(buf, 4, 1, out);
+    buf_to_int(buf);
 
-    pl->name = (char*)malloc(sz);
-    fread(pl->name,sz,1,out);
-    pl->name[sz] = '\0';
-    
-	read_bytes = fread(buf, 4, 1, out);
-	pl->hp = buf_to_int(buf);
-    
-	read_bytes = fread(buf, 4, 1, out);
-	pl->max_hp = buf_to_int(buf);
-	
-	read_bytes = fread(buf, 4, 1, out);
-	pl->exp_cl = buf_to_int(buf);
-	
-	read_bytes = fread(buf, 4, 1, out);
-	pl->exp_ml = buf_to_int(buf);
-	
-	read_bytes = fread(buf, 4, 1, out);
-	pl->call_level_skill = buf_to_int(buf);
-	
-	read_bytes = fread(buf, 4, 1, out);
-	pl->mechanics_level_skill = buf_to_int(buf);
-	
-	read_bytes = fread(buf, 4, 1, out);
-	pl->money = buf_to_int(buf);
-	
-	read_bytes = fread(buf, 4, 1, out);
-	pl->read_necronomicon = buf_to_int(buf);
-    
-	read_bytes = fread(buf, 4, 1, out);
-	fu = buf_to_int(buf);
+    fread(buf, 4, 1, out);
+    sz = buf_to_int(buf);
 
-     if(fu == 0){
-        pl->unit = NULL;
-     }else if (fu == 1){
-        pl->unit = (struct summoned_unit *) malloc(sizeof(struct summoned_unit));        
-		read_bytes = fread(buf, 4, 1, out);
-	    pl->unit->hp = buf_to_int(buf);
-        
-		read_bytes = fread(buf, 4, 1, out);
-    	pl->unit->max_hp = buf_to_int(buf);
-	         
-		read_bytes = fread(buf, 4, 1, out);
-	    pl->unit->danger_level = buf_to_int(buf);
-        
-		read_bytes = fread(buf, 4, 1, out);
-	    pl->unit->damage = buf_to_int(buf);
+    s_player->name = (char*)malloc(sz);
+    fread(s_player->name, sz, 1, out);
+    s_player->name[sz] = '\0';
 
-        pl->unit->ml = (struct mechanics_list *) malloc(sizeof(struct mechanics_list));        
-		read_bytes = fread(buf, 4, 1, out);
-	    pl->unit->ml->armour = buf_to_int(buf);
-        
-		read_bytes = fread(buf, 4, 1, out);
-	    pl->unit->ml->plazma = buf_to_int(buf);
-        
-		read_bytes = fread(buf, 4, 1, out);
-	    pl->unit->ml->gun = buf_to_int(buf);
-        
-		read_bytes = fread(buf, 4, 1, out);
-	    pl->unit->ml->neirosynaptic = buf_to_int(buf);
-     }
+    fread(buf, 4, 1, out);
+    s_player->hp = buf_to_int(buf);
+
+    fread(buf, 4, 1, out);
+    s_player->max_hp = buf_to_int(buf);
+
+    fread(buf, 4, 1, out);
+    s_player->exp_cl = buf_to_int(buf);
+
+    fread(buf, 4, 1, out);
+    s_player->exp_ml = buf_to_int(buf);
+
+    fread(buf, 4, 1, out);
+    s_player->call_level_skill = buf_to_int(buf);
+
+    fread(buf, 4, 1, out);
+    s_player->mechanics_level_skill = buf_to_int(buf);
+
+    fread(buf, 4, 1, out);
+    s_player->money = buf_to_int(buf);
+
+    fread(buf, 4, 1, out);
+    s_player->read_necronomicon = buf_to_int(buf);
+
+    fread(buf, 4, 1, out);
+    fu = buf_to_int(buf);
+
+    if (fu == 0)
+    {
+        s_player->unit = NULL;
+    }
+    else if (fu == 1)
+    {
+        s_player->unit = (struct summoned_unit*)malloc(sizeof(struct summoned_unit));
+        fread(buf, 4, 1, out);
+        s_player->unit->hp = buf_to_int(buf);
+
+        fread(buf, 4, 1, out);
+        s_player->unit->max_hp = buf_to_int(buf);
+
+        fread(buf, 4, 1, out);
+        s_player->unit->danger_level = buf_to_int(buf);
+
+        fread(buf, 4, 1, out);
+        s_player->unit->damage = buf_to_int(buf);
+
+        s_player->unit->ml = (struct mechanics_list*)malloc(sizeof(struct mechanics_list));
+        fread(buf, 4, 1, out);
+        s_player->unit->ml->armour = buf_to_int(buf);
+
+        fread(buf, 4, 1, out);
+        s_player->unit->ml->plazma = buf_to_int(buf);
+
+        fread(buf, 4, 1, out);
+        s_player->unit->ml->gun = buf_to_int(buf);
+
+        fread(buf, 4, 1, out);
+        s_player->unit->ml->neirosynaptic = buf_to_int(buf);
+    }
     fclose(out);
 
-    genzone();
-    f_zi = 1;
-    f_home = 1;
-    f_lab = 0;
-    f_zone = 0;
-    f_fight = 0;
-    f_sfight = 0;
-    f_finish = 1;
-    f_win = 0;
+    s_player->max_money = MAX_MONEY;
+    s_player->max_exp_cl = MAX_EXP_CL;
+    s_player->max_exp_ml = MAX_EXP_ML;
+
+    generate_zones();
+    enable_flags(SHOW_ZONE_INFO_FLAG | AT_HOME_FLAG);
 
     return 1;
 }
 
-static int save(lua_State *L) {
-    FILE *tf;
-	int sz = 0;
-	int fu = 0;
-    tf=fopen("save.ns","wb");
-    sz = strlen(pl->name);
+static int32_t save(lua_State* L)
+{
+    save_state();
+    return 1;
+}
 
-	write_int(tf, sz);
-    fwrite(pl->name,sz,1,tf);    
-	write_int(tf, pl->hp);
-	write_int(tf, pl->max_hp); 
-	write_int(tf, pl->exp_cl);    
-	write_int(tf, pl->exp_ml);    
-	write_int(tf, pl->call_level_skill);  
-	write_int(tf, pl->mechanics_level_skill);    
-	write_int(tf, pl->money);    
-	write_int(tf, pl->read_necronomicon);
+void save_state()
+{
+    FILE* tf;
+    int32_t sz = 0;
+    int32_t fu = 0;
+    tf = fopen("save.ns", "wb");
+    sz = strlen(s_player->name);
 
-    if(pl->unit == NULL) {
-      fu = 0;      
-	  write_int(tf, fu);
-    } else {
-      fu = 1;        
-	  write_int(tf, fu);      
-	  write_int(tf, pl->unit->hp);      
-	  write_int(tf, pl->unit->max_hp);      
-	  write_int(tf, pl->unit->danger_level);      
-	  write_int(tf, pl->unit->damage);      
-	  write_int(tf, pl->unit->ml->armour);      
-	  write_int(tf, pl->unit->ml->plazma);      
-	  write_int(tf, pl->unit->ml->gun);      
-	  write_int(tf, pl->unit->ml->neirosynaptic);
+    write_int(tf, NS_FILE_VERSION);
+    write_int(tf, sz);
+    fwrite(s_player->name, sz, 1, tf);
+    write_int(tf, s_player->hp);
+    write_int(tf, s_player->max_hp);
+    write_int(tf, s_player->exp_cl);
+    write_int(tf, s_player->exp_ml);
+    write_int(tf, s_player->call_level_skill);
+    write_int(tf, s_player->mechanics_level_skill);
+    write_int(tf, s_player->money);
+    write_int(tf, s_player->read_necronomicon);
+
+    if (s_player->unit == NULL)
+    {
+        fu = 0;
+        write_int(tf, fu);
+    }
+    else
+    {
+        fu = 1;
+        write_int(tf, fu);
+        write_int(tf, s_player->unit->hp);
+        write_int(tf, s_player->unit->max_hp);
+        write_int(tf, s_player->unit->danger_level);
+        write_int(tf, s_player->unit->damage);
+        write_int(tf, s_player->unit->ml->armour);
+        write_int(tf, s_player->unit->ml->plazma);
+        write_int(tf, s_player->unit->ml->gun);
+        write_int(tf, s_player->unit->ml->neirosynaptic);
     }
     fclose(tf);
-    return 1;
 }
 
-static int write_int(FILE *fp, int32_t value) {
+int32_t write_int(FILE* fp, int32_t value)
+{
     unsigned char bytes[4];
-	int i = 0;
+    int32_t i = 0;
     bytes[0] = (value >> 24) & 0xFF;
     bytes[1] = (value >> 16) & 0xFF;
     bytes[2] = (value >> 8) & 0xFF;
-    bytes[3] = value & 0xFF;	
-    for(i = 0; i < 4; i++) {
-        fwrite((const void*) & bytes[i], 1, 1, fp);
+    bytes[3] = value & 0xFF;
+    for (i = 0; i < 4; i++)
+    {
+        fwrite((const void*)&bytes[i], 1, 1, fp);
     }
-	return 1;
+    return 1;
 }
 
-static int32_t buf_to_int(unsigned char buf[]) {
+int32_t buf_to_int(const unsigned char buf[])
+{
     int32_t value = (buf[0] << 24) + (buf[1] << 16) + (buf[2] << 8) + buf[3];
     return value;
 }
 
-static int is_home(lua_State *L){
-    lua_pushinteger(L, f_home);
+static int32_t is_home(lua_State* L)
+{
+    lua_pushinteger(L, is_flag_enable(AT_HOME_FLAG));
     return 1;
 }
 
-static int is_lab(lua_State *L){
-    lua_pushinteger(L, f_lab);
+static int32_t is_lab(lua_State* L)
+{
+    lua_pushinteger(L, is_flag_enable(AT_MASTER_LAB));
     return 1;
 }
 
-static int is_zone(lua_State *L){
-    lua_pushinteger(L, f_zone);
+static int32_t is_zone(lua_State* L)
+{
+    lua_pushinteger(L, is_flag_enable(AT_ZONE_FLAG));
     return 1;
 }
 
-static int is_fight_mode(lua_State *L){
-    lua_pushinteger(L, f_fight);
+static int32_t is_fight_mode(lua_State* L)
+{
+    lua_pushinteger(L, is_flag_enable(ACTIVE_FIGHT_PHASE_FLAG));
     return 1;
 }
 
-static int is_start_fight_mode(lua_State *L){
-    lua_pushinteger(L, f_sfight);
+static int32_t is_start_fight_mode(lua_State* L)
+{
+    lua_pushinteger(L, is_flag_enable(START_FIGHT_PHASE_FLAG));
     return 1;
 }
 
-static int return_home(lua_State *L){
-    f_home = 1;
-    f_lab = 0;
-    f_zone = 0;
+static int32_t return_home(lua_State* L)
+{
+    enable_flags(AT_HOME_FLAG);
     return 1;
 }
 
-static int into_lab(lua_State *L){
-    f_home = 0;
-    f_lab = 1;
+static int32_t into_lab(lua_State* L)
+{
+    enable_flags(AT_MASTER_LAB);
     return 1;
 }
 
-static int locate_zone(lua_State *L){
-    id_z = (int)lua_tonumber(L,1);
-    f_home = 0;
-    f_lab = 0;
-    f_zone = 1;
-    f_zi = 1;
-    zones = z_head;
-    while(zones->id != id_z){
-        zones = zones->next;
+static int32_t locate_zone(lua_State* L)
+{
+    zone_id = (int)lua_tonumber(L, 1);
+    enable_flags(AT_ZONE_FLAG | SHOW_ZONE_INFO_FLAG);
+    zones = zones_head;
+    while (zones->id != zone_id)
+    {
+        zones = zones->next_zone;
     }
     return 1;
 }
 
-static int call_unit(lua_State *L){
-    int id = id_z;
-	int r_unit = 0;
-    int max_ld = 0;
-    int min_ld = 0;
-    int type = 0;
-	int sum = 0;
-	int max_s = 0;
-	int f_first_c = 0;
-    srand((unsigned int)time(NULL));    
+static int32_t call_unit(lua_State* L)
+{
+    int32_t id = zone_id;
+    int32_t r_unit = 0;
+    int32_t max_ld = 0;
+    int32_t min_ld = 0;
+    int32_t type = 0;
+    int32_t sum = 0;
+    int32_t max_s = 0;
+    int32_t f_first_c = 0;
+    srand((unsigned int)time(NULL));
 
-    if(id >= 3){
+    if (id >= 3)
+    {
         type = rand() % 2 + 1;
-    }else{
-        type = 1;
+    }
+    else
+    {
+        type = NORMAL;
     }
 
-    if(type == 1){
-     switch(zones->id){
-            case 1: {
-                zones->units = l1_head;
-                min_ld = 1;
-                max_ld = 6;
+    if (type == NORMAL)
+    {
+        switch (zones->id)
+        {
+        case 1:
+            {
+                zones->units = zone1_units_head;
+                min_ld = ZONE_1_UNIT_MIN_DANGER_LEVEL;
+                max_ld = ZONE_1_UNIT_MAX_DANGER_LEVEL;
                 break;
             }
-            case 2: {
-                zones->units = l2_head;
-                min_ld = 7;
-                max_ld = 12;
+        case 2:
+            {
+                zones->units = zone2_units_head;
+                min_ld = ZONE_2_UNIT_MIN_DANGER_LEVEL;
+                max_ld = ZONE_2_UNIT_MAX_DANGER_LEVEL;
                 break;
             }
-            case 3: {
-                zones->units = l3_head;
-                min_ld = 13;
-                max_ld = 18;
+        case 3:
+            {
+                zones->units = zone3_units_head;
+                min_ld = ZONE_3_UNIT_MIN_DANGER_LEVEL;
+                max_ld = ZONE_3_UNIT_MAX_DANGER_LEVEL;
                 break;
             }
-            case 4: {
-                zones->units = l4_head;
-                min_ld = 19;
-                max_ld = 24;
+        case 4:
+            {
+                zones->units = zone4_units_head;
+                min_ld = ZONE_4_UNIT_MIN_DANGER_LEVEL;
+                max_ld = ZONE_4_UNIT_MAX_DANGER_LEVEL;
                 break;
             }
-            case 5: {
-                zones->units = l5_head;
-                min_ld = 25;
-                max_ld = 30;
+        case 5:
+            {
+                zones->units = zone5_units_head;
+                min_ld = ZONE_5_UNIT_MIN_DANGER_LEVEL;
+                max_ld = ZONE_5_UNIT_MAX_DANGER_LEVEL;
                 break;
             }
-            default: break;
-        }
-    }  
-    
-    if(type == 2){
-     switch(zones->id){
-            case 3: {
-                zones->units = l3_head;
-                min_ld = 1;
-                max_ld = 8;
-                break;
-            }
-            case 4: {
-                zones->units = l4_head;
-                min_ld = 9;
-                max_ld = 18;
-                break;
-            }
-            case 5: {
-                zones->units = l5_head;
-                min_ld = 19;
-                max_ld = 25;
-                break;
-            }
-            default: break;
+        default: break;
         }
     }
-      
-        sum = max_ld - min_ld;
-        r_unit = rand() % (sum + 1) + min_ld;        
-      if(type == 1){
-        if(pl->call_level_skill < 2){
+
+    if (type == DAEMON)
+    {
+        switch (zones->id)
+        {
+        case 3:
+            {
+                zones->units = zone3_units_head;
+                min_ld = ZONE_3_DAEMON_MIN_DANGER_LEVEL;
+                max_ld = ZONE_3_DAEMON_MAX_DANGER_LEVEL;
+                break;
+            }
+        case 4:
+            {
+                zones->units = zone4_units_head;
+                min_ld = ZONE_4_DAEMON_MIN_DANGER_LEVEL;
+                max_ld = ZONE_4_DAEMON_MAX_DANGER_LEVEL;
+                break;
+            }
+        case 5:
+            {
+                zones->units = zone5_units_head;
+                min_ld = ZONE_5_DAEMON_MIN_DANGER_LEVEL;
+                max_ld = ZONE_5_DAEMON_MAX_DANGER_LEVEL;
+                break;
+            }
+        default: break;
+        }
+    }
+
+    srand((unsigned int)time(NULL));
+    sum = max_ld - min_ld;
+    r_unit = rand() % (sum + 1) + min_ld;
+    if (type == NORMAL)
+    {
+        if (s_player->call_level_skill < 2)
+        {
             max_s = 1;
-        }else if(pl->call_level_skill < 3){
+        }
+        else if (s_player->call_level_skill < 3)
+        {
             max_s = 4;
-         }else if(pl->call_level_skill < 4){
+        }
+        else if (s_player->call_level_skill < 4)
+        {
             max_s = 8;
-          }else if(pl->call_level_skill < 7){
-              max_s = 15;
-           }else{
-                max_s = 30;
-            }
-       }
-       
-       if(type == 2){
-        if(pl->call_level_skill == 6){
-            max_s = 5;
-        }else if(pl->call_level_skill == 7){
+        }
+        else if (s_player->call_level_skill < 7)
+        {
             max_s = 15;
-         }else{
-            max_s = 25;
-          }
-       }      
+        }
+        else
+        {
+            max_s = 30;
+        }
+    }
 
-        if(r_unit > max_s){
-            lua_pushinteger(L, -1);
-        }else if((type == 2 && pl->read_necronomicon == 0) || (type == 2 && pl->call_level_skill < 6)){
-            lua_pushinteger(L, -1);
-        }else{
-            if(type == 1){
-              while(zones->units->unit->danger_level != r_unit){
-                 zones->units = zones->units->next;
-              }
+    if (type == DAEMON)
+    {
+        if (s_player->call_level_skill == 6)
+        {
+            max_s = 5;
+        }
+        else if (s_player->call_level_skill == 7)
+        {
+            max_s = 15;
+        }
+        else
+        {
+            max_s = 25;
+        }
+    }
+
+    if (r_unit > max_s)
+    {
+        lua_pushinteger(L, -1);
+    }
+    else if ((type == DAEMON && s_player->read_necronomicon == 0) || (type == DAEMON && s_player->call_level_skill < 6))
+    {
+        lua_pushinteger(L, -1);
+    }
+    else
+    {
+        if (zones != NULL && zones->units != NULL)
+        {
+            if (type == NORMAL)
+            {
+                while (zones->units->unit->danger_level != r_unit)
+                {
+                    zones->units = zones->units->next_unit;
+                }
             }
-            if(type == 2){
-                while(zones->units->unit->danger_level != r_unit && zones->units->unit->type != 2){
-                 zones->units = zones->units->next;
-              }
-            }            
-            if(pl->unit == NULL){
+            if (type == DAEMON)
+            {
+                while (zones->units->unit->danger_level != r_unit && zones->units->unit->type != DAEMON)
+                {
+                    zones->units = zones->units->next_unit;
+                }
+            }
+            if (s_player->unit == NULL)
+            {
                 f_first_c = 1;
             }
-            if (pl->unit != NULL){
-                free(pl->unit->ml);
-                free(pl->unit);
+            if (s_player->unit != NULL)
+            {
+                free(s_player->unit->ml);
+                free(s_player->unit);
             }
-            pl->unit = (struct summoned_unit *) malloc(sizeof(struct summoned_unit));
-            pl->unit->hp = zones->units->unit->hp;
-            pl->unit->max_hp = zones->units->unit->hp;
-            pl->unit->danger_level = zones->units->unit->danger_level;
-            pl->unit->damage = zones->units->unit->damage;
-            pl->unit->ml = (struct mechanics_list *) malloc(sizeof(struct mechanics_list));
-            pl->unit->ml->armour = 0;
-            pl->unit->ml->gun = 0;
-            pl->unit->ml->plazma = 0;
-            pl->unit->ml->neirosynaptic = 0;
+            s_player->unit = (struct summoned_unit*)malloc(sizeof(struct summoned_unit));
+            s_player->unit->hp = zones->units->unit->hp;
+            s_player->unit->max_hp = zones->units->unit->hp;
+            s_player->unit->danger_level = zones->units->unit->danger_level;
+            s_player->unit->damage = zones->units->unit->damage;
+            s_player->unit->ml = (struct mechanics_list*)malloc(sizeof(struct mechanics_list));
+            s_player->unit->ml->armour = 0;
+            s_player->unit->ml->gun = 0;
+            s_player->unit->ml->plazma = 0;
+            s_player->unit->ml->neirosynaptic = 0;
 
-  
-            if(f_first_c == 1){
-				if((pl->exp_cl + 30) <= pl->max_exp_cl ) {
-						pl->exp_cl = pl->exp_cl + 30;
-						check_levelup(pl,pl->exp_cl);
-				}
+
+            if (f_first_c == 1)
+            {
+                if ((s_player->exp_cl + 30) <= s_player->max_exp_cl)
+                {
+                    s_player->exp_cl = s_player->exp_cl + 30;
+                    check_levelup(s_player, s_player->exp_cl);
+                }
             }
 
-            if(pl->unit != NULL && f_first_c != 1 && pl->unit->danger_level < r_unit){
-				if((pl->exp_cl + 30) <= pl->max_exp_cl ) {
-					pl->exp_cl = pl->exp_cl + 30;
-					check_levelup(pl,pl->exp_cl);
-				}
+            if (s_player->unit != NULL && f_first_c != 1 && s_player->unit->danger_level < r_unit)
+            {
+                if ((s_player->exp_cl + 30) <= s_player->max_exp_cl)
+                {
+                    s_player->exp_cl = s_player->exp_cl + 30;
+                    check_levelup(s_player, s_player->exp_cl);
+                }
             }
-            if(type == 1){
-              lua_pushinteger(L, 1);
+            if (type == NORMAL)
+            {
+                lua_pushinteger(L, NORMAL);
             }
-            if(type == 2){
-              lua_pushinteger(L, 2);
+            if (type == DAEMON)
+            {
+                lua_pushinteger(L, DAEMON);
             }
-         }
-   return 1;
-}
-
-static int set_fight_mode(lua_State *L){
-  f_fight = 1;
-  f_sfight = 0;
-  f_finish = 0;
-  f_win = 0;
-  t = -1;
-  return 1;
-}
-
-static int set_start_fight_mode(lua_State *L){
-  f_sfight = 1;
-  f_fight = 0;
-  f_finish = 0;
-  f_win = 0;
-  t = -1;
-  return 1;
-}
-
-static int set_finish_fight(lua_State *L){
-  f_sfight = 0;
-  f_fight = 0;
-  f_finish = 1;
-  f_win = 0;
-  return 1;
-}
-
-static int check_zone_unit_ld(lua_State *L){
-    int max_ld;
-    int min_ld;
-    int ld;
-
-     switch(id_z){
-            case 1: {
-                zones->units = l1_head;
-                min_ld = 1;
-                max_ld = 6;
-                break;
-            }
-            case 2: {
-                zones->units = l2_head;
-                min_ld = 7;
-                max_ld = 12;
-                break;
-            }
-            case 3: {
-                zones->units = l3_head;
-                min_ld = 13;
-                max_ld = 18;
-                break;
-            }
-            case 4: {
-                zones->units = l4_head;
-                min_ld = 19;
-                max_ld = 24;
-                break;
-            }
-            case 5: {
-                zones->units = l5_head;
-                min_ld = 25;
-                max_ld = 30;
-                break;
-            }
-            default: break;
         }
-
-
-
-    ld = (int)lua_tonumber(L,1);
-          if(ld >= 1 && ld <= 30){
-              if(ld >= min_ld && ld <= max_ld){
-                   while(zones->units->unit->danger_level != ld){
-                     zones->units = zones->units->next;
-                   }
-                   enemy.hp = zones->units->unit->hp;
-                   enemy.danger_level = zones->units->unit->danger_level;
-                   enemy.damage = zones->units->unit->damage;
-                   enemy.type = zones->units->unit->type;
-                   lua_pushinteger(L,1);
-        
-              }else{
-                 lua_pushinteger(L,0);
-               }
-          }else{
-            lua_pushinteger(L,0);
-          }    
-    return 1;      
-}
-
-static int get_current_unit_damage(lua_State *L){
-lua_pushinteger(L,u_damage);
-return 1;
-}
-static int get_enemy_damage(lua_State *L){
-lua_pushinteger(L,e_damage);
-return 1;
-}
-
-static int fight(lua_State *L){
-        
-        srand((unsigned int)time(NULL));
-
-        u_damage = 0;
-        u_damage = pl->unit->damage + (pl->unit->ml->gun/2) + (pl->unit->ml->neirosynaptic*5);
-        e_damage = 0;
-
-        enemy.hp = enemy.hp - u_damage;
-            if(enemy.hp <= 0){
-                f_finish = 1;
-                f_win = 1;
-                f_fight = 0;
-                f_sfight = 0;
-				if((pl->exp_cl + 40) <= pl->max_exp_cl ) {
-					pl->exp_cl = pl->exp_cl + 40;
-				}
-				if((pl->money + 100) <= pl->max_money) {
-					pl->money = pl->money + 100;
-				}
-				if((pl->exp_ml + 10) <= pl->max_exp_ml ) {
-					pl->exp_ml = pl->exp_ml + 10;
-				}
-                check_levelup(pl,pl->exp_cl);
-                lua_pushinteger(L,1);
-            }
-            if(f_finish != 1){
-              t = rand()%2;
-              if(t == 0){
-                  e_damage = enemy.damage;
-                  pl->hp = pl->hp - enemy.damage;
-              }else{
-                  e_damage = enemy.damage - (pl->unit->ml->armour/3) - (pl->unit->ml->plazma*2);                 
-                  pl->unit->hp = pl->unit->hp - e_damage;
-               }
-             if(pl->hp <= 0){
-                pl->hp = 0;
-                free(pl->unit->ml);
-                free(pl->unit);
-                pl->unit->ml = NULL;
-                pl->unit =  NULL;
-                f_finish = 1;
-                f_win = 0;
-                f_fight = 0;
-                f_sfight = 0;
-                lua_pushinteger(L,-1);
-              }
-              if(pl->unit != NULL){
-               if(pl->unit->hp <= 0){
-                free(pl->unit->ml);
-                free(pl->unit);
-                pl->unit->ml = NULL;
-                pl->unit =  NULL;
-                f_finish = 1;
-                f_win = 0;
-                f_fight = 0;
-                f_sfight = 0;
-                lua_pushinteger(L,0);
-               }
-              }
-            }
-       return 1;     
-}
-
-static int check_finish_fight(lua_State *L){
-lua_pushinteger(L,f_finish);
-return 1;
-}
-
-static int check_win_fight(lua_State *L){
-lua_pushinteger(L,f_win);
-return 1;
-}
-
-static int check_type_fight(lua_State *L){
-lua_pushinteger(L,t);
-return 1;
-}
-
-static int check_unit(lua_State *L){
-
-    if(pl->unit != NULL){
-       lua_pushboolean(L, 1);
-    }else{
-       lua_pushboolean(L, 0);
     }
     return 1;
 }
 
-static int check_necro(lua_State *L){
-
-    if(pl->read_necronomicon == 1){
-       lua_pushboolean(L, 1);
-    }else{
-       lua_pushboolean(L, 0);
-    }
+static int32_t set_fight_mode(lua_State* L)
+{
+    enable_flags(ACTIVE_FIGHT_PHASE_FLAG);
+    damage_type = NO_DAMAGE_TYPE;
     return 1;
 }
 
-static int check_armour(lua_State *L){
-
-    if(pl->mechanics_level_skill >= 1){
-       lua_pushboolean(L, 1);
-    }else{
-       lua_pushboolean(L, 0);
-    }
+static int32_t set_start_fight_mode(lua_State* L)
+{
+    enable_flags(START_FIGHT_PHASE_FLAG);
+    damage_type = NO_DAMAGE_TYPE;
     return 1;
 }
 
-static int check_superarmour(lua_State *L){
-
-    if(pl->mechanics_level_skill >= 2){
-       lua_pushboolean(L, 1);
-    }else{
-       lua_pushboolean(L, 0);
-    }
+static int32_t set_finish_fight(lua_State* L)
+{
+    enable_flags(END_FIGHT_PHASE_FLAG);
     return 1;
 }
 
-static int check_gun(lua_State *L){
+static int32_t check_zone_unit_ld(lua_State* L)
+{
+    int32_t max_ld;
+    int32_t min_ld;
+    int32_t ld;
 
-    if(pl->mechanics_level_skill >= 3){
-       lua_pushboolean(L, 1);
-    }else{
-       lua_pushboolean(L, 0);
-    }
-    return 1;
-}
-
-static int check_rocket(lua_State *L){
-
-    if(pl->mechanics_level_skill >= 4){
-       lua_pushboolean(L, 1);
-    }else{
-       lua_pushboolean(L, 0);
-    }
-    return 1;
-}
-
-static int check_plazma(lua_State *L){
-
-    if(pl->mechanics_level_skill >= 5){
-       lua_pushboolean(L, 1);
-    }else{
-       lua_pushboolean(L, 0);
-    }
-    return 1;
-}
-
-static int check_neurosynaptic(lua_State *L){
-
-    if(pl->mechanics_level_skill >= 6){
-       lua_pushboolean(L, 1);
-    }else{
-       lua_pushboolean(L, 0);
-    }
-    return 1;
-}
-
-static int build_armour(lua_State *L){
-    lua_pushinteger(L,create_armourour(pl));
-    return 1;
-}
-
-static int build_superarmour(lua_State *L){
-    lua_pushinteger(L,create_superarmourour(pl));
-    return 1;
-}
-
-static int build_gun(lua_State *L){
-    lua_pushinteger(L,create_gun(pl));
-    return 1;
-}
-
-static int build_rocket(lua_State *L){
-    lua_pushinteger(L,create_rockets(pl));
-    return 1;
-}
-
-static int build_plazma(lua_State *L){
-    lua_pushinteger(L,create_plazma(pl));
-    return 1;
-}
-
-static int build_neurosynaptic(lua_State *L){
-    lua_pushinteger(L,create_neurosynaptic(pl));
-    return 1;
-}
-
-static int get_id_zone(lua_State *L){
-	lua_pushinteger(L, zones->id);
-	return 1;
-}
-
-static int get_locate_id_zone(lua_State *L){
-    lua_pushinteger(L, id_z);
-    return 1;
-}
-
-static int get_zone_min_unit_LD(lua_State *L){
-
-  if(zones != NULL){
-        switch(zones->id){
-            case 1: {
-                zones->units = l1_head;
-                break;
-            }
-            case 2: {
-                zones->units = l2_head;
-                break;
-            }
-            case 3: {
-                zones->units = l3_head;
-                break;
-            }
-            case 4: {
-                zones->units = l4_head;
-                break;
-            }
-            case 5: {
-                zones->units = l5_head;
-                break;
-            }
-            default: break;
+    switch (zones->id)
+    {
+    case 1:
+        {
+            zones->units = zone1_units_head;
+            min_ld = ZONE_1_UNIT_MIN_DANGER_LEVEL;
+            max_ld = ZONE_1_UNIT_MAX_DANGER_LEVEL;
+            break;
         }
-      }
+    case 2:
+        {
+            zones->units = zone2_units_head;
+            min_ld = ZONE_2_UNIT_MIN_DANGER_LEVEL;
+            max_ld = ZONE_2_UNIT_MAX_DANGER_LEVEL;
+            break;
+        }
+    case 3:
+        {
+            zones->units = zone3_units_head;
+            min_ld = ZONE_3_UNIT_MIN_DANGER_LEVEL;
+            max_ld = ZONE_3_UNIT_MAX_DANGER_LEVEL;
+            break;
+        }
+    case 4:
+        {
+            zones->units = zone4_units_head;
+            min_ld = ZONE_4_UNIT_MIN_DANGER_LEVEL;
+            max_ld = ZONE_4_UNIT_MAX_DANGER_LEVEL;
+            break;
+        }
+    case 5:
+        {
+            zones->units = zone5_units_head;
+            min_ld = ZONE_5_UNIT_MIN_DANGER_LEVEL;
+            max_ld = ZONE_5_UNIT_MAX_DANGER_LEVEL;
+            break;
+        }
+    default: break;
+    }
+
+
+    ld = (int32_t)lua_tonumber(L, 1);
+    if (ld >= 1 && ld <= 30)
+    {
+        if (ld >= min_ld && ld <= max_ld)
+        {
+            while (zones->units->unit->danger_level != ld)
+            {
+                zones->units = zones->units->next_unit;
+            }
+
+            active_enemy = (struct unit*)malloc(sizeof(struct unit));
+            active_enemy->hp = zones->units->unit->hp;
+            active_enemy->danger_level = zones->units->unit->danger_level;
+            active_enemy->damage = zones->units->unit->damage;
+            active_enemy->type = zones->units->unit->type;
+            lua_pushinteger(L, 1);
+        }
+        else
+        {
+            lua_pushinteger(L, 0);
+        }
+    }
+    else
+    {
+        lua_pushinteger(L, 0);
+    }
+    return 1;
+}
+
+static int32_t get_current_unit_damage(lua_State* L)
+{
+    lua_pushinteger(L, current_unit_damage);
+    return 1;
+}
+
+static int32_t get_enemy_damage(lua_State* L)
+{
+    lua_pushinteger(L, current_enemy_damage);
+    return 1;
+}
+
+static int32_t fight(lua_State* L)
+{
+    srand((unsigned int)time(NULL));
+
+    current_unit_damage = 0;
+    current_unit_damage = s_player->unit->damage + (s_player->unit->ml->gun / 2) + (s_player->unit->ml->neirosynaptic *
+        5);
+    current_enemy_damage = 0;
+
+    active_enemy->hp = active_enemy->hp - current_unit_damage;
+    if (active_enemy->hp <= 0)
+    {
+        enable_flags(END_FIGHT_PHASE_FLAG | IS_WIN_FIGHT_FLAG | AT_ZONE_FLAG);
+        if ((s_player->exp_cl + 40) <= s_player->max_exp_cl)
+        {
+            s_player->exp_cl = s_player->exp_cl + 40;
+        }
+        if ((s_player->money + 100) <= s_player->max_money)
+        {
+            s_player->money = s_player->money + 100;
+        }
+        if ((s_player->exp_ml + 10) <= s_player->max_exp_ml)
+        {
+            s_player->exp_ml = s_player->exp_ml + 10;
+        }
+        check_levelup(s_player, s_player->exp_cl);
+        lua_pushinteger(L, 1);
+    }
+    if (is_flag_enable(END_FIGHT_PHASE_FLAG) != enable)
+    {
+        damage_type = rand() % 2;
+        if (damage_type == 0)
+        {
+            current_enemy_damage = active_enemy->damage;
+            s_player->hp = s_player->hp - active_enemy->damage;
+        }
+        else
+        {
+            current_enemy_damage = active_enemy->damage - (s_player->unit->ml->armour / 3) - (s_player->unit->ml->plazma
+                * 2);
+            s_player->unit->hp = s_player->unit->hp - current_enemy_damage;
+        }
+        if (s_player->hp <= 0)
+        {
+            s_player->hp = 0;
+            free(s_player->unit->ml);
+            free(s_player->unit);
+            s_player->unit->ml = NULL;
+            s_player->unit = NULL;
+            enable_flags(END_FIGHT_PHASE_FLAG);
+            lua_pushinteger(L, -1);
+        }
+        if (s_player->unit != NULL)
+        {
+            if (s_player->unit->hp <= 0)
+            {
+                free(s_player->unit->ml);
+                free(s_player->unit);
+                s_player->unit->ml = NULL;
+                s_player->unit = NULL;
+                enable_flags(END_FIGHT_PHASE_FLAG);
+                lua_pushinteger(L, 0);
+            }
+        }
+    }
+    return 1;
+}
+
+static int32_t check_finish_fight(lua_State* L)
+{
+    lua_pushinteger(L, is_flag_enable(END_FIGHT_PHASE_FLAG));
+    return 1;
+}
+
+static int32_t check_win_fight(lua_State* L)
+{
+    lua_pushinteger(L, is_flag_enable(IS_WIN_FIGHT_FLAG));
+    return 1;
+}
+
+static int32_t check_type_fight(lua_State* L)
+{
+    lua_pushinteger(L, damage_type);
+    return 1;
+}
+
+static int32_t check_unit(lua_State* L)
+{
+    if (s_player->unit != NULL)
+    {
+        lua_pushboolean(L, 1);
+    }
+    else
+    {
+        lua_pushboolean(L, 0);
+    }
+    return 1;
+}
+
+static int32_t check_necro(lua_State* L)
+{
+    if (s_player->read_necronomicon == 1)
+    {
+        lua_pushboolean(L, 1);
+    }
+    else
+    {
+        lua_pushboolean(L, 0);
+    }
+    return 1;
+}
+
+static int32_t check_armour(lua_State* L)
+{
+    if (s_player->mechanics_level_skill >= 1)
+    {
+        lua_pushboolean(L, 1);
+    }
+    else
+    {
+        lua_pushboolean(L, 0);
+    }
+    return 1;
+}
+
+static int32_t check_superarmour(lua_State* L)
+{
+    if (s_player->mechanics_level_skill >= 2)
+    {
+        lua_pushboolean(L, 1);
+    }
+    else
+    {
+        lua_pushboolean(L, 0);
+    }
+    return 1;
+}
+
+static int32_t check_gun(lua_State* L)
+{
+    if (s_player->mechanics_level_skill >= 3)
+    {
+        lua_pushboolean(L, 1);
+    }
+    else
+    {
+        lua_pushboolean(L, 0);
+    }
+    return 1;
+}
+
+static int32_t check_rocket(lua_State* L)
+{
+    if (s_player->mechanics_level_skill >= 4)
+    {
+        lua_pushboolean(L, 1);
+    }
+    else
+    {
+        lua_pushboolean(L, 0);
+    }
+    return 1;
+}
+
+static int32_t check_plazma(lua_State* L)
+{
+    if (s_player->mechanics_level_skill >= 5)
+    {
+        lua_pushboolean(L, 1);
+    }
+    else
+    {
+        lua_pushboolean(L, 0);
+    }
+    return 1;
+}
+
+static int32_t check_neurosynaptic(lua_State* L)
+{
+    if (s_player->mechanics_level_skill >= 6)
+    {
+        lua_pushboolean(L, 1);
+    }
+    else
+    {
+        lua_pushboolean(L, 0);
+    }
+    return 1;
+}
+
+static int32_t build_armour(lua_State* L)
+{
+    lua_pushinteger(L, create_armourour(s_player));
+    return 1;
+}
+
+static int32_t build_superarmour(lua_State* L)
+{
+    lua_pushinteger(L, create_superarmourour(s_player));
+    return 1;
+}
+
+static int32_t build_gun(lua_State* L)
+{
+    lua_pushinteger(L, create_gun(s_player));
+    return 1;
+}
+
+static int32_t build_rocket(lua_State* L)
+{
+    lua_pushinteger(L, create_rockets(s_player));
+    return 1;
+}
+
+static int32_t build_plazma(lua_State* L)
+{
+    lua_pushinteger(L, create_plazma(s_player));
+    return 1;
+}
+
+static int32_t build_neurosynaptic(lua_State* L)
+{
+    lua_pushinteger(L, create_neurosynaptic(s_player));
+    return 1;
+}
+
+static int32_t get_id_zone(lua_State* L)
+{
+    lua_pushinteger(L, zones->id);
+    return 1;
+}
+
+static int32_t get_locate_id_zone(lua_State* L)
+{
+    lua_pushinteger(L, zone_id);
+    return 1;
+}
+
+static int32_t get_zone_min_unit_LD(lua_State* L)
+{
+    if (zones != NULL)
+    {
+        switch (zones->id)
+        {
+        case 1:
+            {
+                zones->units = zone1_units_head;
+                break;
+            }
+        case 2:
+            {
+                zones->units = zone2_units_head;
+                break;
+            }
+        case 3:
+            {
+                zones->units = zone3_units_head;
+                break;
+            }
+        case 4:
+            {
+                zones->units = zone4_units_head;
+                break;
+            }
+        case 5:
+            {
+                zones->units = zone5_units_head;
+                break;
+            }
+        default: break;
+        }
+    }
 
     lua_pushinteger(L, zones->units->unit->danger_level);
-	return 1;
-}
-
-static int get_zone_max_unit_LD(lua_State *L){
-  int f_d = 0;
-  if(zones != NULL){
-        switch(zones->id){
-            case 1: {
-                zones->units = l1_head;
-                break;
-            }
-            case 2: {
-                zones->units = l2_head;
-                break;
-            }
-            case 3: {
-                zones->units = l3_head;
-                break;
-            }
-            case 4: {
-                zones->units = l4_head;
-                break;
-            }
-            case 5: {
-                zones->units = l5_head;
-                break;
-            }
-            default: break;
-        }
-      }       
-           while(zones->units->next != NULL){
-                if(zones->units->next->unit->type == 2 ){
-                    lua_pushinteger(L, zones->units->unit->danger_level); 
-                    f_d = 1;
-                    break;
-                }
-              zones->units = zones->units->next;            
-           }
-           if(f_d == 0){
-             lua_pushinteger(L, zones->units->unit->danger_level);
-           }
-
     return 1;
 }
 
-static int get_zone_min_daemon_LD(lua_State *L){
-  int f_d = 0;
-  if(zones != NULL){
-        switch(zones->id){
-            case 1: {
-                zones->units = l1_head;
-                break;
-            }
-            case 2: {
-                zones->units = l2_head;
-                break;
-            }
-            case 3: {
-                zones->units = l3_head;
-                break;
-            }
-            case 4: {
-                zones->units = l4_head;
-                break;
-            }
-            case 5: {
-                zones->units = l5_head;
-                break;
-            }
-            default: break;
-        }
-      }       
-
-           while(zones->units->next != NULL){
-                if(zones->units->next->unit->type == 2){
-                    f_d = 1;
-                }
-              zones->units = zones->units->next;            
-              if(f_d == 1){
-                    lua_pushinteger(L, zones->units->unit->danger_level);
-                    break;
-              }
-           }
-           if(f_d == 0){
-              lua_pushinteger(L, -1);
-           }
-    return 1;
-}
-
-static int get_zone_max_daemon_LD(lua_State *L){
-
-  if(zones != NULL){
-        switch(zones->id){
-            case 1: {
-                zones->units = l1_head;
-                break;
-            }
-            case 2: {
-                zones->units = l2_head;
-                break;
-            }
-            case 3: {
-                zones->units = l3_head;
-                break;
-            }
-            case 4: {
-                zones->units = l4_head;
-                break;
-            }
-            case 5: {
-                zones->units = l5_head;
-                break;
-            }
-            default: break;
-        }
-      }
-           while(zones->units->next != NULL){
-              zones->units = zones->units->next;            
-           }
-            if(zones->units->unit->type == 1){
-              lua_pushinteger(L, -1);
-            }else{
-              lua_pushinteger(L, zones->units->unit->danger_level); 
-            }
-    return 1;
-}
-
-static int get_zones_info(lua_State *L){
-	if(f_zi == 1){
-         zones = z_head;
-         f_zi = 0;
-    }else{
-        zones = zones->next;
-    }
-        if(zones == NULL){
-           f_zi = 1;
-           lua_pushboolean(L,0);
-        }else{
-           lua_pushboolean(L,1);
-        }
-    return 1;
-}
-
-static int get_zone_info(lua_State *L){
-    if(f_zi == 1){
-        f_zi = 0;
-         switch(id_z){
-            case 1: {
-                zones->units = l1_head;
-                break;
-            }
-            case 2: {
-                zones->units = l2_head;
-                break;
-            }
-            case 3: {
-                zones->units = l3_head;
-                break;
-            }
-            case 4: {
-                zones->units = l4_head;
-                break;
-            }
-            case 5: {
-                zones->units = l5_head;
-                break;
-            }
-            default: break;
-        }
-        lua_pushboolean(L,1);
-    }else if(f_zi == 0 && zones->units->next != NULL){
-         zones->units = zones->units->next;
-            lua_pushboolean(L,1);
-    }else if(f_zi == 0 && zones->units->next == NULL){
-        f_zi = 1;
-        lua_pushboolean(L,0);
-    }
-    return 1;
-}
-
-static int get_zone_unit_hp(lua_State *L){    
-    lua_pushinteger(L, zones->units->unit->hp); 
-    return 1;
-}
-
-static int get_zone_unit_ld(lua_State *L){    
-    lua_pushinteger(L, zones->units->unit->danger_level); 
-    return 1;
-}
-
-static int get_zone_unit_type(lua_State *L){    
-    lua_pushinteger(L, zones->units->unit->type); 
-    return 1;
-}
-
-static int get_zone_unit_damage(lua_State *L){    
-    lua_pushinteger(L, zones->units->unit->damage); 
-    return 1;
-}
-
-DLL_PUBLIC int luaopen_nslib(lua_State *L)
+static int32_t get_zone_max_unit_LD(lua_State* L)
 {
-static const luaL_reg Map [] = {{"get_name_pl", get_name_pl}, 
-                                {"get_hp_pl",get_hp_pl},{"get_maxhp_pl",get_maxhp_pl}, 
-                                {"get_call_level_skill_pl",get_call_level_skill_pl},{"get_mechanics_level_skill_pl",get_mechanics_level_skill_pl}, 
-                                {"get_exp_cl_pl",get_exp_cl_pl},{"get_exp_ml_pl",get_exp_ml_pl}, 
-                                {"get_money_pl",get_money_pl},{"init",init} ,{"load",load},
-                                {"get_zones_info" , get_zones_info } , {"get_id_zone",get_id_zone},
-                                {"get_zone_min_unit_LD",get_zone_min_unit_LD,},{"get_zone_max_unit_LD",get_zone_max_unit_LD},
-                                {"get_zone_min_daemon_LD",get_zone_min_daemon_LD},{"get_zone_max_daemon_LD",get_zone_max_daemon_LD},
-                                {"is_home",is_home},{"restore",restore},{"check_unit",check_unit},{"check_necro",check_necro},
-                                {"check_armour",check_armour},{"check_superarmour",check_superarmour},{"check_gun",check_gun},
-                                {"check_rocket",check_rocket},{"check_plazma",check_plazma},{"check_neurosynaptic",check_neurosynaptic},
-                                {"is_lab",is_lab},{"return_home",return_home},{"into_lab",into_lab},{"build_armour",build_armour},
-                                {"build_superarmour",build_superarmour},{"build_rocket",build_rocket},{"build_gun",build_gun},
-                                {"build_plazma",build_plazma},{"build_neurosynaptic",build_neurosynaptic},{"read_necro",read_necro},
-                                {"lvlup_lm",lvlup_lm},{"locate_zone",locate_zone},{"get_locate_id_zone",get_locate_id_zone},
-                                {"is_zone",is_zone},{"get_zone_info",get_zone_info},{"get_zone_unit_damage",get_zone_unit_damage},
-                                {"get_zone_unit_hp",get_zone_unit_hp},{"get_zone_unit_ld",get_zone_unit_ld},
-                                {"get_zone_unit_type",get_zone_unit_type},{"call_unit",call_unit},{"get_hp_unit",get_hp_unit},
-                                {"get_ld_unit",get_ld_unit},{"get_damage_unit",get_damage_unit},{"get_armour_unit",get_armour_unit},
-                                {"get_plazma_unit",get_plazma_unit},{"get_gun_unit",get_gun_unit},{"get_neirosynaptic_unit",get_neirosynaptic_unit},
-                                {"get_maxhp_unit",get_maxhp_unit},{"save",save},{"is_fight_mode",is_fight_mode},
-                                {"set_fight_mode",set_fight_mode},{"check_zone_unit_ld",check_zone_unit_ld},
-                                {"set_start_fight_mode",set_start_fight_mode},{"is_start_fight_mode",is_start_fight_mode},
-                                {"get_current_unit_damage", get_current_unit_damage},{"get_enemy_damage",get_enemy_damage},
-                                {"check_finish_fight",check_finish_fight},{"check_win_fight",check_win_fight},{"check_type_fight",check_type_fight},
-                                {"fight",fight},{"set_finish_fight",set_finish_fight},
-                               {NULL,NULL}};
-luaL_register(L, "nslib", Map);
-return 1;
+    if (zones != NULL)
+    {
+        int32_t is_first_daemon_found = 0;
+        switch (zones->id)
+        {
+        case 1:
+            {
+                zones->units = zone1_units_head;
+                break;
+            }
+        case 2:
+            {
+                zones->units = zone2_units_head;
+                break;
+            }
+        case 3:
+            {
+                zones->units = zone3_units_head;
+                break;
+            }
+        case 4:
+            {
+                zones->units = zone4_units_head;
+                break;
+            }
+        case 5:
+            {
+                zones->units = zone5_units_head;
+                break;
+            }
+        default: break;
+        }
+
+        while (zones->units->next_unit != NULL)
+        {
+            if (zones->units->next_unit->unit->type == DAEMON)
+            {
+                lua_pushinteger(L, zones->units->unit->danger_level);
+                is_first_daemon_found = 1;
+                break;
+            }
+            zones->units = zones->units->next_unit;
+        }
+        if (is_first_daemon_found == 0)
+        {
+            lua_pushinteger(L, zones->units->unit->danger_level);
+        }
+    }
+
+    return 1;
 }
 
-void genzone(){
-    zones = (struct zone *) malloc(sizeof(struct zone));
-    z_head = zones;
-    
+static int32_t get_zone_min_daemon_LD(lua_State* L)
+{
+    if (zones != NULL)
+    {
+        int32_t is_daemon_found = 0;
+        switch (zones->id)
+        {
+        case 1:
+            {
+                zones->units = zone1_units_head;
+                break;
+            }
+        case 2:
+            {
+                zones->units = zone2_units_head;
+                break;
+            }
+        case 3:
+            {
+                zones->units = zone3_units_head;
+                break;
+            }
+        case 4:
+            {
+                zones->units = zone4_units_head;
+                break;
+            }
+        case 5:
+            {
+                zones->units = zone5_units_head;
+                break;
+            }
+        default: break;
+        }
+
+        while (zones->units->next_unit != NULL)
+        {
+            if (zones->units->next_unit->unit->type == DAEMON)
+            {
+                is_daemon_found = 1;
+            }
+            zones->units = zones->units->next_unit;
+            if (is_daemon_found == 1)
+            {
+                lua_pushinteger(L, zones->units->unit->danger_level);
+                break;
+            }
+        }
+        if (is_daemon_found == 0)
+        {
+            lua_pushinteger(L, -1);
+        }
+    }
+    return 1;
+}
+
+static int32_t get_zone_max_daemon_LD(lua_State* L)
+{
+    if (zones != NULL)
+    {
+        switch (zones->id)
+        {
+        case 1:
+            {
+                zones->units = zone1_units_head;
+                break;
+            }
+        case 2:
+            {
+                zones->units = zone2_units_head;
+                break;
+            }
+        case 3:
+            {
+                zones->units = zone3_units_head;
+                break;
+            }
+        case 4:
+            {
+                zones->units = zone4_units_head;
+                break;
+            }
+        case 5:
+            {
+                zones->units = zone5_units_head;
+                break;
+            }
+        default: break;
+        }
+
+        while (zones->units->next_unit != NULL)
+        {
+            zones->units = zones->units->next_unit;
+        }
+        if (zones->units->unit->type == NORMAL)
+        {
+            lua_pushinteger(L, -1);
+        }
+        else
+        {
+            lua_pushinteger(L, zones->units->unit->danger_level);
+        }
+    }
+    return 1;
+}
+
+static int32_t get_zones_info(lua_State* L)
+{
+    if (is_flag_enable(SHOW_ZONE_INFO_FLAG) == enable)
+    {
+        zones = zones_head;
+        disable_flag(SHOW_ZONE_INFO_FLAG);
+    }
+    else
+    {
+        zones = zones->next_zone;
+    }
+    if (zones == NULL)
+    {
+        enable_flags(AT_HOME_FLAG | SHOW_ZONE_INFO_FLAG);
+        lua_pushboolean(L, 0);
+    }
+    else
+    {
+        lua_pushboolean(L, 1);
+    }
+    return 1;
+}
+
+static int32_t get_zone_info(lua_State* L)
+{
+    if (is_flag_enable(SHOW_ZONE_INFO_FLAG) == enable)
+    {
+        disable_flag(SHOW_ZONE_INFO_FLAG);
+        switch (zone_id)
+        {
+        case 1:
+            {
+                zones->units = zone1_units_head;
+                break;
+            }
+        case 2:
+            {
+                zones->units = zone2_units_head;
+                break;
+            }
+        case 3:
+            {
+                zones->units = zone3_units_head;
+                break;
+            }
+        case 4:
+            {
+                zones->units = zone4_units_head;
+                break;
+            }
+        case 5:
+            {
+                zones->units = zone5_units_head;
+                break;
+            }
+        default: break;
+        }
+        lua_pushboolean(L, 1);
+    }
+    else if (is_flag_enable(SHOW_ZONE_INFO_FLAG) == disable && zones->units->next_unit != NULL)
+    {
+        zones->units = zones->units->next_unit;
+        lua_pushboolean(L, 1);
+    }
+    else if (is_flag_enable(SHOW_ZONE_INFO_FLAG) == disable && zones->units->next_unit == NULL)
+    {
+        enable_flags(AT_ZONE_FLAG | SHOW_ZONE_INFO_FLAG);
+        lua_pushboolean(L, 0);
+    }
+    return 1;
+}
+
+static int32_t get_zone_unit_hp(lua_State* L)
+{
+    lua_pushinteger(L, zones->units->unit->hp);
+    return 1;
+}
+
+static int32_t get_zone_unit_ld(lua_State* L)
+{
+    lua_pushinteger(L, zones->units->unit->danger_level);
+    return 1;
+}
+
+static int32_t get_zone_unit_type(lua_State* L)
+{
+    lua_pushinteger(L, zones->units->unit->type);
+    return 1;
+}
+
+static int32_t get_zone_unit_damage(lua_State* L)
+{
+    lua_pushinteger(L, zones->units->unit->damage);
+    return 1;
+}
+
+DLL_PUBLIC int32_t luaopen_nslib(lua_State* L)
+{
+    static const luaL_reg Map[] = {
+        {"get_lib_version", get_lib_version},
+        {"refresh", refresh},
+        {"get_name_pl", get_name_pl},
+        {"get_hp_pl", get_hp_pl},
+        {"get_maxhp_pl", get_maxhp_pl},
+        {"get_call_level_skill_pl", get_call_level_skill_pl},
+        {"get_mechanics_level_skill_pl", get_mechanics_level_skill_pl},
+        {"get_exp_cl_pl", get_exp_cl_pl},
+        {"get_exp_ml_pl", get_exp_ml_pl},
+        {"get_money_pl", get_money_pl},
+        {"init", init},
+        {"load", load},
+        {"get_zones_info", get_zones_info},
+        {"get_id_zone", get_id_zone},
+        {"get_zone_min_unit_LD", get_zone_min_unit_LD,},
+        {"get_zone_max_unit_LD", get_zone_max_unit_LD},
+        {"get_zone_min_daemon_LD", get_zone_min_daemon_LD},
+        {"get_zone_max_daemon_LD", get_zone_max_daemon_LD},
+        {"is_home", is_home},
+        {"restore", restore},
+        {"check_unit", check_unit},
+        {"check_necro", check_necro},
+        {"check_armour", check_armour},
+        {"check_superarmour", check_superarmour},
+        {"check_gun", check_gun},
+        {"check_rocket", check_rocket},
+        {"check_plazma", check_plazma},
+        {"check_neurosynaptic", check_neurosynaptic},
+        {"is_lab", is_lab},
+        {"return_home", return_home},
+        {"into_lab", into_lab},
+        {"build_armour", build_armour},
+        {"build_superarmour", build_superarmour},
+        {"build_rocket", build_rocket},
+        {"build_gun", build_gun},
+        {"build_plazma", build_plazma},
+        {"build_neurosynaptic", build_neurosynaptic},
+        {"read_necro", read_necro},
+        {"lvlup_lm", lvlup_lm},
+        {"locate_zone", locate_zone},
+        {"get_locate_id_zone", get_locate_id_zone},
+        {"is_zone", is_zone},
+        {"get_zone_info", get_zone_info},
+        {"get_zone_unit_damage", get_zone_unit_damage},
+        {"get_zone_unit_hp", get_zone_unit_hp},
+        {"get_zone_unit_ld", get_zone_unit_ld},
+        {"get_zone_unit_type", get_zone_unit_type},
+        {"call_unit", call_unit},
+        {"get_hp_unit", get_hp_unit},
+        {"get_ld_unit", get_ld_unit},
+        {"get_damage_unit", get_damage_unit},
+        {"get_armour_unit", get_armour_unit},
+        {"get_plazma_unit", get_plazma_unit},
+        {"get_gun_unit", get_gun_unit},
+        {"get_neirosynaptic_unit", get_neirosynaptic_unit},
+        {"get_maxhp_unit", get_maxhp_unit},
+        {"save", save},
+        {"is_fight_mode", is_fight_mode},
+        {"set_fight_mode", set_fight_mode},
+        {"check_zone_unit_ld", check_zone_unit_ld},
+        {"set_start_fight_mode", set_start_fight_mode},
+        {"is_start_fight_mode", is_start_fight_mode},
+        {"get_current_unit_damage", get_current_unit_damage},
+        {"get_enemy_damage", get_enemy_damage},
+        {"check_finish_fight", check_finish_fight},
+        {"check_win_fight", check_win_fight},
+        {"check_type_fight", check_type_fight},
+        {"fight", fight},
+        {"set_finish_fight", set_finish_fight},
+        {NULL,NULL}
+    };
+    luaL_register(L, "nslib", Map);
+    return 1;
+}
+
+void build_unit(struct units* lst, int32_t danger_level, int32_t damage, int32_t hp, int32_t type)
+{
+    lst->unit = (struct unit*)malloc(sizeof(struct unit));
+    lst->unit->danger_level = danger_level;
+    lst->unit->damage = damage;
+    lst->unit->hp = hp;
+    lst->unit->type = type;
+}
+
+void generate_zones()
+{
+    zones = (struct zone*)malloc(sizeof(struct zone));
+    zones_head = zones;
+
     zones->id = 1;
-    l1 = (struct lst_units *) malloc(sizeof(struct lst_units));
-    l1_head = l1;       
-    gen_units_zone_I(l1);                              
-    zones->units = l1_head;   
-    zones->next = (struct zone *) malloc(sizeof(struct zone));
-    zones = zones->next;
-    
+    zone1_units = (struct units*)malloc(sizeof(struct units));
+    zone1_units_head = zone1_units;
+    zones->units = zone1_units_head;
+    gen_units_for_zone_I(zone1_units);
+    zones->next_zone = (struct zone*)malloc(sizeof(struct zone));
+    zones = zones->next_zone;
+
     zones->id = 2;
-    l2 = (struct lst_units *) malloc(sizeof(struct lst_units));
-    l2_head = l2;
-    gen_units_zone_II(l2);
-    zones->units = l2_head;
-    zones->next = (struct zone *) malloc(sizeof(struct zone));
-    zones = zones->next;
-    
+    zone2_units = (struct units*)malloc(sizeof(struct units));
+    zone2_units_head = zone2_units;
+    zones->units = zone2_units_head;
+    gen_units_for_zone_II(zone2_units);
+    zones->next_zone = (struct zone*)malloc(sizeof(struct zone));
+    zones = zones->next_zone;
+
     zones->id = 3;
-    l3 = (struct lst_units *) malloc(sizeof(struct lst_units));
-    l3_head = l3;
-    gen_units_zone_III(l3);
-    zones->units = l3_head;
-    zones->next = (struct zone *) malloc(sizeof(struct zone));
-    zones = zones->next;
-    
+    zone3_units = (struct units*)malloc(sizeof(struct units));
+    zone3_units_head = zone3_units;
+    zones->units = zone3_units_head;
+    gen_units_for_zone_III(zone3_units);
+    zones->next_zone = (struct zone*)malloc(sizeof(struct zone));
+    zones = zones->next_zone;
+
     zones->id = 4;
-    l4 = (struct lst_units *) malloc(sizeof(struct lst_units));
-    l4_head = l4;
-    gen_units_zone_IV(l4);
-    zones->units = l4_head;
-    zones->next = (struct zone *) malloc(sizeof(struct zone));
-    zones = zones->next;
-    
+    zone4_units = (struct units*)malloc(sizeof(struct units));
+    zone4_units_head = zone4_units;
+    zones->units = zone4_units_head;
+    gen_units_for_zone_IV(zone4_units);
+    zones->next_zone = (struct zone*)malloc(sizeof(struct zone));
+    zones = zones->next_zone;
+
     zones->id = 5;
-    l5 = (struct lst_units *) malloc(sizeof(struct lst_units));
-    l5_head = l5;
-    gen_units_zone_V(l5);
-    zones->units = l5_head;
-    
-    zones->next = NULL;
+    zone5_units = (struct units*)malloc(sizeof(struct units));
+    zone5_units_head = zone5_units;
+    zones->units = zone5_units_head;
+    gen_units_for_zone_V(zone5_units);
+
+    zones->next_zone = NULL;
 }
 
-void gen_units_zone_I(struct lst_units *lst){
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 1;
-    lst->unit->damage = 5;
-    lst->unit->hp = 10;
-    lst->unit->type = 1;
-    
-    lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
-    lst = lst->next;
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 2;
-    lst->unit->damage = 7;
-    lst->unit->hp = 20;
-    lst->unit->type = 1;
-    
-    lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
-    lst = lst->next;
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 3;
-    lst->unit->damage = 10;
-    lst->unit->hp = 30;
-    lst->unit->type = 1;
-    
-    lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
-    lst = lst->next;
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 4;
-    lst->unit->damage = 12;
-    lst->unit->hp = 40;
-    lst->unit->type = 1;
-    
-    lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
-    lst = lst->next;
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 5;
-    lst->unit->damage = 20;
-    lst->unit->hp = 50;
-    lst->unit->type = 1;
-    
-    lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
-    lst = lst->next;
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 6;
-    lst->unit->damage = 30;
-    lst->unit->hp = 60;
-    lst->unit->type = 1;
-    
-    lst->next = NULL;
-}          
-
-void gen_units_zone_II(struct lst_units *lst){
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 7;
-    lst->unit->damage = 45;
-    lst->unit->hp = 70;
-    lst->unit->type = 1;
-
-    lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
-    lst = lst->next;
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 8;
-    lst->unit->damage = 55;
-    lst->unit->hp = 80;
-    lst->unit->type = 1;
-
-    lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
-    lst = lst->next;
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 9;
-    lst->unit->damage = 65;
-    lst->unit->hp = 90;
-    lst->unit->type = 1;
-    
-    lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
-    lst = lst->next;
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 10;
-    lst->unit->damage = 80;
-    lst->unit->hp = 100;
-    lst->unit->type = 1;
-    
-    lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
-    lst = lst->next;
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 11;
-    lst->unit->damage = 100;
-    lst->unit->hp = 110;
-    lst->unit->type = 1;
-    
-    lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
-    lst = lst->next;
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 12;
-    lst->unit->damage = 110;
-    lst->unit->hp = 120;
-    lst->unit->type = 1;
-    
-    lst->next = NULL;
+void gen_units_for_zone_I(struct units* lst)
+{
+    build_unit(lst, ZONE_1_UNIT_MIN_DANGER_LEVEL, 5, 10, NORMAL);
+    build_next_unit(lst, 2, 7, 20, NORMAL);
+    build_next_unit(lst, 3, 10, 30, NORMAL);
+    build_next_unit(lst, 4, 12, 40, NORMAL);
+    build_next_unit(lst, 5, 20, 50, NORMAL);
+    build_next_unit(lst, ZONE_1_UNIT_MAX_DANGER_LEVEL, 30, 60, NORMAL);
+    lst->next_unit = NULL;
 }
 
-void gen_units_zone_III(struct lst_units *lst){
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 13;
-    lst->unit->damage = 130;
-    lst->unit->hp = 130;
-    lst->unit->type = 1;
-
-    lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
-    lst = lst->next;
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 14;
-    lst->unit->damage = 150;
-    lst->unit->hp = 140;
-    lst->unit->type = 1;
-
-    lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
-    lst = lst->next;
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 15;
-    lst->unit->damage = 170;
-    lst->unit->hp = 150;
-    lst->unit->type = 1;
-
-    lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
-    lst = lst->next;
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 16;
-    lst->unit->damage = 180;
-    lst->unit->hp = 160;
-    lst->unit->type = 1;
-    
-    lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
-    lst = lst->next;
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 17;
-    lst->unit->damage = 190;
-    lst->unit->hp = 170;
-    lst->unit->type = 1;
-    
-    lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
-    lst = lst->next;
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 18;
-    lst->unit->damage = 210;
-    lst->unit->hp = 180;
-    lst->unit->type = 1;
-    
-    lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
-    lst = lst->next;
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 1;
-    lst->unit->damage = 240;
-    lst->unit->hp = 200;
-    lst->unit->type = 2;
-    
-    lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
-    lst = lst->next;
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 2;
-    lst->unit->damage = 260;
-    lst->unit->hp = 220;
-    lst->unit->type = 2;
-    
-    lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
-    lst = lst->next;
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 3;
-    lst->unit->damage = 280;
-    lst->unit->hp = 240;
-    lst->unit->type = 2;
-    
-    lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
-    lst = lst->next;
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 4;
-    lst->unit->damage = 300;
-    lst->unit->hp = 260;
-    lst->unit->type = 2;
-    
-    lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
-    lst = lst->next;
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 5;
-    lst->unit->damage = 320;
-    lst->unit->hp = 280;
-    lst->unit->type = 2;
-    
-    lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
-    lst = lst->next;
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 6;
-    lst->unit->damage = 340;
-    lst->unit->hp = 300;
-    lst->unit->type = 2;
-    
-    lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
-    lst = lst->next;
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 7;
-    lst->unit->damage = 360;
-    lst->unit->hp = 320;
-    lst->unit->type = 2;
-    
-    lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
-    lst = lst->next;
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 8;
-    lst->unit->damage = 380;
-    lst->unit->hp = 340;
-    lst->unit->type = 2;
-    
-    lst->next = NULL;
+void gen_units_for_zone_II(struct units* lst)
+{
+    build_unit(lst, ZONE_2_UNIT_MIN_DANGER_LEVEL, 45, 70, NORMAL);
+    build_next_unit(lst, 8, 55, 80, NORMAL);
+    build_next_unit(lst, 9, 65, 90, NORMAL);
+    build_next_unit(lst, 10, 80, 100, NORMAL);
+    build_next_unit(lst, 11, 100, 110, NORMAL);
+    build_next_unit(lst, ZONE_2_UNIT_MAX_DANGER_LEVEL, 110, 120, NORMAL);
+    lst->next_unit = NULL;
 }
 
-void gen_units_zone_IV(struct lst_units *lst){
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 19;
-    lst->unit->damage = 220;
-    lst->unit->hp = 190;
-    lst->unit->type = 1;
-
-    lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
-    lst = lst->next;
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 20;
-    lst->unit->damage = 230;
-    lst->unit->hp = 200;
-    lst->unit->type = 1;
-
-    lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
-    lst = lst->next;
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 21;
-    lst->unit->damage = 240;
-    lst->unit->hp = 210;
-    lst->unit->type = 1;
-
-    lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
-    lst = lst->next;
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 22;
-    lst->unit->damage = 250;
-    lst->unit->hp = 220;
-    lst->unit->type = 1;
-
-    lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
-    lst = lst->next;
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 23;
-    lst->unit->damage = 270;
-    lst->unit->hp = 230;
-    lst->unit->type = 1;
-    
-    lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
-    lst = lst->next;
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 24;
-    lst->unit->damage = 290;
-    lst->unit->hp = 240;
-    lst->unit->type = 1;
-    
-    lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
-    lst = lst->next;
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 9;
-    lst->unit->damage = 400;
-    lst->unit->hp = 360;
-    lst->unit->type = 2;
-    
-    lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
-    lst = lst->next;
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 10;
-    lst->unit->damage = 420;
-    lst->unit->hp = 380;
-    lst->unit->type = 2;
-    
-    lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
-    lst = lst->next;
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 11;
-    lst->unit->damage = 440;
-    lst->unit->hp = 400;
-    lst->unit->type = 2;
-    
-    lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
-    lst = lst->next;
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 12;
-    lst->unit->damage = 460;
-    lst->unit->hp = 420;
-    lst->unit->type = 2;
-    
-    lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
-    lst = lst->next;
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 13;
-    lst->unit->damage = 480;
-    lst->unit->hp = 440;
-    lst->unit->type = 2;
-    
-    lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
-    lst = lst->next;
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 14;
-    lst->unit->damage = 500;
-    lst->unit->hp = 460;
-    lst->unit->type = 2;
-    
-    lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
-    lst = lst->next;
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 15;
-    lst->unit->damage = 520;
-    lst->unit->hp = 480;
-    lst->unit->type = 2;
-    
-    lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
-    lst = lst->next;
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 16;
-    lst->unit->damage = 540;
-    lst->unit->hp = 500;
-    lst->unit->type = 2;
-    
-    lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
-    lst = lst->next;
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 17;
-    lst->unit->damage = 560;
-    lst->unit->hp = 520;
-    lst->unit->type = 2;
-    
-    lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
-    lst = lst->next;
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 18;
-    lst->unit->damage = 580;
-    lst->unit->hp = 540;
-    lst->unit->type = 2;
-    
-    lst->next = NULL;
+void gen_units_for_zone_III(struct units* lst)
+{
+    build_unit(lst, ZONE_3_UNIT_MIN_DANGER_LEVEL, 130, 130, NORMAL);
+    build_next_unit(lst, 14, 150, 140, NORMAL);
+    build_next_unit(lst, 15, 170, 150, NORMAL);
+    build_next_unit(lst, 16, 180, 160, NORMAL);
+    build_next_unit(lst, 17, 190, 170, NORMAL);
+    build_next_unit(lst, ZONE_3_UNIT_MAX_DANGER_LEVEL, 210, 180, NORMAL);
+    build_next_unit(lst, ZONE_3_DAEMON_MIN_DANGER_LEVEL, 240, 200, DAEMON);
+    build_next_unit(lst, 2, 260, 220, DAEMON);
+    build_next_unit(lst, 3, 280, 240, DAEMON);
+    build_next_unit(lst, 4, 300, 260, DAEMON);
+    build_next_unit(lst, 5, 320, 280, DAEMON);
+    build_next_unit(lst, 6, 340, 300, DAEMON);
+    build_next_unit(lst, 7, 360, 320, DAEMON);
+    build_next_unit(lst, ZONE_3_DAEMON_MAX_DANGER_LEVEL, 380, 340, DAEMON);
+    lst->next_unit = NULL;
 }
 
-void gen_units_zone_V(struct lst_units *lst){
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 25;
-    lst->unit->damage = 300;
-    lst->unit->hp = 250;
-    lst->unit->type = 1;
+void gen_units_for_zone_IV(struct units* lst)
+{
+    build_unit(lst, ZONE_4_UNIT_MIN_DANGER_LEVEL, 220, 190, NORMAL);
+    build_next_unit(lst, 20, 230, 200, NORMAL);
+    build_next_unit(lst, 21, 240, 210, NORMAL);
+    build_next_unit(lst, 22, 250, 220, NORMAL);
+    build_next_unit(lst, 23, 270, 230, NORMAL);
+    build_next_unit(lst, ZONE_4_UNIT_MAX_DANGER_LEVEL, 290, 240, NORMAL);
+    build_next_unit(lst, ZONE_4_DAEMON_MIN_DANGER_LEVEL, 400, 360, DAEMON);
+    build_next_unit(lst, 10, 420, 380, DAEMON);
+    build_next_unit(lst, 11, 440, 400, DAEMON);
+    build_next_unit(lst, 12, 460, 420, DAEMON);
+    build_next_unit(lst, 13, 480, 440, DAEMON);
+    build_next_unit(lst, 14, 500, 460, DAEMON);
+    build_next_unit(lst, 15, 520, 480, DAEMON);
+    build_next_unit(lst, 16, 540, 500, DAEMON);
+    build_next_unit(lst, 17, 560, 520, DAEMON);
+    build_next_unit(lst, ZONE_4_DAEMON_MAX_DANGER_LEVEL, 580, 540, DAEMON);
+    lst->next_unit = NULL;
+}
 
-    lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
-    lst = lst->next;
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 26;
-    lst->unit->damage = 320;
-    lst->unit->hp = 260;
-    lst->unit->type = 1;
-
-    lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
-    lst = lst->next;
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 27;
-    lst->unit->damage = 330;
-    lst->unit->hp = 270;
-    lst->unit->type = 1;
-
-    lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
-    lst = lst->next;
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 28;
-    lst->unit->damage = 350;
-    lst->unit->hp = 280;
-    lst->unit->type = 1;
-
-    lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
-    lst = lst->next;
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 29;
-    lst->unit->damage = 370;
-    lst->unit->hp = 290;
-    lst->unit->type = 1;
-    
-    lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
-    lst = lst->next;
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 30;
-    lst->unit->damage = 400;
-    lst->unit->hp = 300;
-    lst->unit->type = 1;
-    
-    lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
-    lst = lst->next;
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 19;
-    lst->unit->damage = 600;
-    lst->unit->hp = 560;
-    lst->unit->type = 2;
-    
-    lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
-    lst = lst->next;
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 20;
-    lst->unit->damage = 620;
-    lst->unit->hp = 580;
-    lst->unit->type = 2;
-    
-    lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
-    lst = lst->next;
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 21;
-    lst->unit->damage = 640;
-    lst->unit->hp = 600;
-    lst->unit->type = 2;
-    
-    lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
-    lst = lst->next;
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 22;
-    lst->unit->damage = 660;
-    lst->unit->hp = 620;
-    lst->unit->type = 2;
-    
-    lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
-    lst = lst->next;
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 23;
-    lst->unit->damage = 680;
-    lst->unit->hp = 640;
-    lst->unit->type = 2;
-    
-    lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
-    lst = lst->next;
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 24;
-    lst->unit->damage = 700;
-    lst->unit->hp = 660;
-    lst->unit->type = 2;
-    
-    lst->next = (struct lst_units *) malloc(sizeof(struct lst_units));
-    lst = lst->next;
-    lst->unit = (struct units *) malloc(sizeof(struct units));
-    lst->unit->danger_level = 25;
-    lst->unit->damage = 720;
-    lst->unit->hp = 680;
-    lst->unit->type = 2;
-    
-    lst->next = NULL;
+void gen_units_for_zone_V(struct units* lst)
+{
+    build_unit(lst, ZONE_5_UNIT_MIN_DANGER_LEVEL, 300, 250, NORMAL);
+    build_next_unit(lst, 26, 320, 260, NORMAL);
+    build_next_unit(lst, 27, 330, 270, NORMAL);
+    build_next_unit(lst, 28, 350, 280, NORMAL);
+    build_next_unit(lst, 29, 370, 290, NORMAL);
+    build_next_unit(lst, ZONE_5_UNIT_MAX_DANGER_LEVEL, 400, 300, NORMAL);
+    build_next_unit(lst, ZONE_5_DAEMON_MIN_DANGER_LEVEL, 600, 560, DAEMON);
+    build_next_unit(lst, 20, 620, 580, DAEMON);
+    build_next_unit(lst, 21, 640, 600, DAEMON);
+    build_next_unit(lst, 22, 660, 620, DAEMON);
+    build_next_unit(lst, 23, 680, 640, DAEMON);
+    build_next_unit(lst, 24, 700, 660, DAEMON);
+    build_next_unit(lst, ZONE_5_DAEMON_MAX_DANGER_LEVEL, 720, 680, DAEMON);
+    lst->next_unit = NULL;
 }
