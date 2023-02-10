@@ -52,4 +52,7 @@ seq:
     if: player_has_unit_tag == 1  
   - id: unit_neirosynaptic_tag
     type: s4
-    if: player_has_unit_tag == 1  
+    if: player_has_unit_tag == 1
+  - id: unit_type_tag
+    type: s4
+    if: player_has_unit_tag == 1
