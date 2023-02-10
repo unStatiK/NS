@@ -3,9 +3,10 @@ require "nslib"
 function love.load()
     window_width = love.graphics.getWidth()
     window_height = love.graphics.getHeight()
-    love.window.setIcon(love.image.newImageData("jack.png"))
+    love.window.setIcon(love.image.newImageData("assets/jack.png"))
     love.mouse.setVisible(false)
     nslib.refresh()
+    clear_flags()
     init_global_vars()
     init_global_resource()
 end
@@ -25,22 +26,23 @@ function init_global_vars()
     show_interact_menu_flag = 0
     is_need_resize_windows = 0
     current_screen_mode = ScreenMode.MODE_800_600
+    file_with_save_exist = is_file_with_save_exist()
 end
 
 function init_global_resource()
-    start_menu_image = love.graphics.newImage("ns.jpeg")
-    start_menu_position_icon = love.graphics.newImage("skull.png")
-    create_name_menu_image = love.graphics.newImage("start.jpeg")
-    sk = love.graphics.newImage("skull_s.png")
-    al = love.graphics.newImage("alch.png")
-    cat = love.graphics.newImage("Cat.png")
-    zmb = love.graphics.newImage("zombie.png")
-    c1 = love.graphics.newImage("cube.png")
-    c2 = love.graphics.newImage("cube2.png")
-    gun = love.graphics.newImage("gun.png")
-    rck = love.graphics.newImage("rocket.png")
-    plz = love.graphics.newImage("plazma.png")
-    brn = love.graphics.newImage("brain.png")
+    start_menu_image = love.graphics.newImage("assets/ns.jpeg")
+    start_menu_position_icon = love.graphics.newImage("assets/skull.png")
+    create_name_menu_image = love.graphics.newImage("assets/start.jpeg")
+    sk = love.graphics.newImage("assets/skull_s.png")
+    al = love.graphics.newImage("assets/alch.png")
+    cat = love.graphics.newImage("assets/Cat.png")
+    zmb = love.graphics.newImage("assets/zombie.png")
+    c1 = love.graphics.newImage("assets/cube.png")
+    c2 = love.graphics.newImage("assets/cube2.png")
+    gun = love.graphics.newImage("assets/gun.png")
+    rck = love.graphics.newImage("assets/rocket.png")
+    plz = love.graphics.newImage("assets/plazma.png")
+    brn = love.graphics.newImage("assets/brain.png")
 
     game_font = "fonts/Monocraft.ttf"
     font24 = love.graphics.newFont(game_font, 24)
@@ -98,8 +100,13 @@ function show_start_menu_scene()
     if start_menu_position == 1 then
         love.graphics.setColor(150, 0, 0)
         love.graphics.print("Start", 550, 190)
-        love.graphics.setColor(255, 255, 255)
+        if file_with_save_exist == false then
+            love.graphics.setColor(96, 96, 96)
+        else
+            love.graphics.setColor(255, 255, 255)
+        end
         love.graphics.print("Load", 550, 215)
+        love.graphics.setColor(255, 255, 255)
         love.graphics.print("Screen option", 550, 240)
         love.graphics.print("Exit", 550, 265)
         love.graphics.draw(start_menu_position_icon, 500, 185)
@@ -117,6 +124,11 @@ function show_start_menu_scene()
     elseif start_menu_position == 3 then
         love.graphics.setColor(255, 255, 255)
         love.graphics.print("Start", 550, 190)
+        if file_with_save_exist == false then
+            love.graphics.setColor(96, 96, 96)
+        else
+            love.graphics.setColor(255, 255, 255)
+        end
         love.graphics.print("Load", 550, 215)
         love.graphics.setColor(170, 0, 0)
         love.graphics.print("Screen option", 550, 240)
@@ -126,7 +138,13 @@ function show_start_menu_scene()
     elseif start_menu_position == 4 then
         love.graphics.setColor(255, 255, 255)
         love.graphics.print("Start", 550, 190)
+        if file_with_save_exist == false then
+            love.graphics.setColor(96, 96, 96)
+        else
+            love.graphics.setColor(255, 255, 255)
+        end
         love.graphics.print("Load", 550, 215)
+        love.graphics.setColor(255, 255, 255)
         love.graphics.print("Screen option", 550, 240)
         love.graphics.setColor(170, 0, 0)
         love.graphics.print("Exit", 550, 265)
@@ -239,7 +257,12 @@ function show_main_ui()
     plmoney = nslib.get_money_pl()
     love.graphics.print("$:" .. plmoney, 28, 170)
     if nslib.check_unit() == true then
-        love.graphics.setColor(255, 255, 255)
+        local unit_type = nslib.get_unit_type()
+        if unit_type == 2 then
+            love.graphics.setColor(255, 0, 0)
+        else
+            love.graphics.setColor(255, 255, 255)
+        end
         love.graphics.rectangle("line", 20, 230, 130, 180)
         love.graphics.setColor(0, 255, 0)
         unhp = nslib.get_hp_unit()
@@ -314,7 +337,12 @@ function show_zone_info_2()
 end
 
 function fight()
-    love.graphics.print("Fight with enemy LD " .. nslib.get_zone_unit_ld(), 170, 50)
+    local enemy_type = nslib.get_enemy_type()
+    local enemy_prefix = ""
+    if enemy_type == 2 then
+        enemy_prefix = "daemon "
+    end
+    love.graphics.print("Fight with " .. enemy_prefix .. "enemy LD " .. nslib.get_zone_unit_ld(), 170, 50)
     if nslib.check_finish_fight() ~= 1 and f_cont == 1 then
         battle_round_result = nslib.fight()
         f_cont = 0
@@ -340,6 +368,7 @@ function fight()
         end
         if nslib.check_finish_fight() == 1 and nslib.check_unit() == false and nslib.get_hp_pl() > 0 then
             love.graphics.print("Your unit is die !", 170, 110)
+            nslib.set_finish_fight()
         end
     end
 end
@@ -370,8 +399,13 @@ function love.draw()
         if nslib.is_lab() == 1 then
             love.graphics.print("Master's Lab", 646, 50)
         end
+        
         if nslib.is_zone() == 1 then
             love.graphics.print("Zone " .. nslib.get_locate_id_zone(), 700, 50)
+        end
+
+        if act_lhp == 1 then
+            love.graphics.print("You should restored HP!", 170, 50)
         end
 
         if act_z1 == 1 then
@@ -467,8 +501,15 @@ function love.draw()
         end
 
         if act_lm == 1 then
-            if command_result_flag == 0 then
-                love.graphics.print("You cannot levelup LM !", 170, 50)
+            if command_result_flag <= 0 then
+                local reason = "You cannot levelup LM !"
+                if command_result_flag == -1 then
+                    reason = reason .. " [not enough exp]"
+                end
+                if command_result_flag == -2 then
+                    reason = reason .. " [not enough money]"
+                end
+                love.graphics.print(reason, 170, 50)
             end
             if command_result_flag == 1 then
                 love.graphics.print("You read 1 part Alchemist's book !", 170, 50)
@@ -511,9 +552,11 @@ function love.draw()
                 love.graphics.print("enter UNIT danger_level for fight", 170, 50)
             elseif command_result_flag == 3 then
                 love.graphics.print("No UNIT for fight !", 170, 50)
+                nslib.set_finish_fight()
             end
             if command_result_flag == 0 then
                 love.graphics.print("No unit with this LD at this zone!", 170, 80)
+                nslib.set_finish_fight()
             end
         end
 
@@ -614,20 +657,27 @@ function love.keypressed(key, unicode)
 
     if is_start_menu_flag == 0 then
         if key == "up" and start_menu_position > 1 then
-            start_menu_position = start_menu_position - 1
+            local offset = 1
+            if file_with_save_exist == false and start_menu_position == 3 then
+                offset = 2
+            end
+            start_menu_position = start_menu_position - offset
         end
         if key == "down" and start_menu_position < 4 then
-            start_menu_position = start_menu_position + 1
+            local offset = 1
+            if file_with_save_exist == false and start_menu_position == 1 then
+                offset = 2
+            end
+            start_menu_position = start_menu_position + offset
         end
 
         if key == "return" and is_start_menu_flag == 0 then
             if start_menu_position == 1 then
                 is_start_menu_flag = 1
             elseif start_menu_position == 2 then
-                e = love.filesystem.exists("save.ns")
-                if e == false then
+                if file_with_save_exist == false then
                     love.event.push("quit")
-                elseif e == true then
+                elseif file_with_save_exist == true then
                     nslib.refresh()
                     nslib.load()
                     is_game_start_flag = 1
@@ -737,7 +787,7 @@ function love.resize(w, h)
     window_height = h
 end
 
-function set_flags(var_z1, var_z2, var_f_wlc, var_rs, var_h1, var_h2, var_h3, var_ca, var_csa, var_cg, var_cr, var_cp, var_cn, var_rn, var_lm, var_zl, var_c, var_s, var_sf, var_f, var_f_cont)
+function set_flags(var_z1, var_z2, var_f_wlc, var_rs, var_h1, var_h2, var_h3, var_ca, var_csa, var_cg, var_cr, var_cp, var_cn, var_rn, var_lm, var_zl, var_c, var_s, var_sf, var_f, var_f_cont, var_lhp)
 
     act_z1 = var_z1
     act_z2 = var_z2
@@ -759,12 +809,13 @@ function set_flags(var_z1, var_z2, var_f_wlc, var_rs, var_h1, var_h2, var_h3, va
     act_s = var_s
     act_sf = var_sf
     act_f = var_f
+    act_lhp = var_lhp
     f_cont = var_f_cont
 
 end
 
 function clear_flags()
-    set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+    set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 end
 
 function check_cli()
@@ -772,18 +823,18 @@ function check_cli()
 
     if nslib.is_fight_mode() == 1 and input_text == "y" then
         input_text = ""
-        set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1)
+        set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0)
     end
     if nslib.is_fight_mode() == 1 and input_text == "n" then
         input_text = ""
-        set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0)
+        set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0)
         nslib.set_finish_fight()
     end
     if nslib.is_start_fight_mode() == 1 then
         command_result_flag = nslib.check_zone_unit_ld(input_text)
         input_text = ""
         if command_result_flag == 1 then
-            set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1)
+            set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0)
             nslib.set_fight_mode()
         end
     end
@@ -796,10 +847,10 @@ function check_cli()
         if input_text == "z" then
             input_text = ""
             if nslib.is_home() == 1 then
-                set_flags(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+                set_flags(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
             end
             if nslib.is_zone() == 1 then
-                set_flags(0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+                set_flags(0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
             end
         end
         if input_text == "clr" then
@@ -809,135 +860,155 @@ function check_cli()
         if input_text == "rs" then
             if nslib.is_home() == 1 then
                 input_text = ""
-                set_flags(0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+                set_flags(0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
                 nslib.restore()
             end
         end
         if input_text == "rn" then
             if nslib.is_home() == 1 then
                 input_text = ""
-                set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0)
+                set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0)
                 command_result_flag = nslib.read_necro()
             end
         end
         if input_text == "cb" then
             if nslib.is_home() == 1 then
                 input_text = ""
-                set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+                set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
                 nslib.into_lab()
             end
         end
         if input_text == "r" then
             input_text = ""
-            set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+            set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
             nslib.return_home()
         end
         if input_text == "h" then
             input_text = ""
             if nslib.is_home() == 1 then
-                set_flags(0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+                set_flags(0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
             end
             if nslib.is_lab() == 1 then
-                set_flags(0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+                set_flags(0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
             end
             if nslib.is_zone() == 1 then
-                set_flags(0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+                set_flags(0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
             end
         end
         if input_text == "ca" then
             if nslib.is_lab() == 1 then
                 input_text = ""
-                set_flags(0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+                set_flags(0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
                 command_result_flag = nslib.build_armour()
             end
         end
         if input_text == "csa" then
             if nslib.is_lab() == 1 then
                 input_text = ""
-                set_flags(0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+                set_flags(0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
                 command_result_flag = nslib.build_superarmour()
             end
         end
         if input_text == "cg" then
             if nslib.is_lab() == 1 then
                 input_text = ""
-                set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+                set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
                 command_result_flag = nslib.build_gun()
             end
         end
         if input_text == "cr" then
             if nslib.is_lab() == 1 then
                 input_text = ""
-                set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+                set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
                 command_result_flag = nslib.build_rocket()
             end
         end
         if input_text == "cp" then
             if nslib.is_lab() == 1 then
                 input_text = ""
-                set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+                set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
                 command_result_flag = nslib.build_plazma()
             end
         end
         if input_text == "cn" then
             if nslib.is_lab() == 1 then
                 input_text = ""
-                set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0)
+                set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0)
                 command_result_flag = nslib.build_neurosynaptic()
             end
         end
         if input_text == "lm" then
             if nslib.is_home() == 1 then
                 input_text = ""
-                set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0)
+                set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0)
                 command_result_flag = nslib.lvlup_lm()
             end
         end
         if input_text == "z1" then
             if nslib.is_home() == 1 then
                 input_text = ""
-                set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0)
+                if nslib.get_hp_pl() <= 0 then
+                    set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1)
+                    return
+                end
+                set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0)
                 nslib.locate_zone(1)
             end
         end
         if input_text == "z2" then
             if nslib.is_home() == 1 then
                 input_text = ""
-                set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0)
+                if nslib.get_hp_pl() <= 0 then
+                    set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1)
+                    return
+                end
+                set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0)
                 nslib.locate_zone(2)
             end
         end
         if input_text == "z3" then
             if nslib.is_home() == 1 then
                 input_text = ""
-                set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0)
+                if nslib.get_hp_pl() <= 0 then
+                    set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1)
+                    return
+                end
+                set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0)
                 nslib.locate_zone(3)
             end
         end
         if input_text == "z4" then
             if nslib.is_home() == 1 then
                 input_text = ""
-                set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0)
+                if nslib.get_hp_pl() <= 0 then
+                    set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1)
+                    return
+                end
+                set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0)
                 nslib.locate_zone(4)
             end
         end
         if input_text == "z5" then
             if nslib.is_home() == 1 then
                 input_text = ""
-                set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0)
+                if nslib.get_hp_pl() <= 0 then
+                    set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1)
+                    return
+                end
+                set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0)
                 nslib.locate_zone(5)
             end
         end
         if input_text == "c" then
             if nslib.is_zone() == 1 then
                 input_text = ""
-                set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0)
+                set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0)
                 command_result_flag = nslib.call_unit()
             end
         end
         if input_text == "s" then
             input_text = ""
-            set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0)
+            set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0)
             nslib.save()
         end
         if input_text == "f" then
@@ -946,7 +1017,7 @@ function check_cli()
                     if nslib.is_fight_mode() == 0 then
                         input_text = ""
                         command_result_flag = -1
-                        set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0)
+                        set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0)
                         nslib.set_start_fight_mode()
                     end
                 end
@@ -954,12 +1025,16 @@ function check_cli()
             if nslib.check_unit() == false then
                 if nslib.is_zone() == 1 then
                     input_text = ""
-                    set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0)
+                    set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0)
                     command_result_flag = 3
                 end
             end
         end
     end
+end
+
+function is_file_with_save_exist()
+    return love.filesystem.exists(nslib.get_filename_with_save())
 end
 
 function trim(s)

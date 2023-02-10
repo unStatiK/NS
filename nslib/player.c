@@ -1,8 +1,12 @@
 #include "player.h"
 
+#if defined(_MSC_VER) && _MSC_VER < 1900
+#define snprintf(buf, len, format,...) _snprintf_s(buf, len, len, format, __VA_ARGS__)
+#endif
+
 void new_character(struct player* pl, const char* name)
 {
-    unsigned int len = 0;
+    unsigned int len = strlen(name);
     pl->hp = 100;
     pl->max_hp = 100;
     pl->call_level_skill = 1;
@@ -10,14 +14,13 @@ void new_character(struct player* pl, const char* name)
     pl->read_necronomicon = 0;
     pl->money = 0;
     pl->max_money = MAX_MONEY;
-    len = strlen(name);
     pl->name = (char*)malloc(len + 1);
-    strcpy(pl->name, name);
+    snprintf(pl->name, len + 1, "%s", name);
     pl->name[len] = '\0';
     pl->exp_cl = 0;
     pl->exp_ml = 0;
-    pl->max_exp_cl = MAX_EXP_CL;
-    pl->max_exp_ml = MAX_EXP_ML;
+    pl->max_exp_cl = MAX_EXP_LC;
+    pl->max_exp_ml = MAX_EXP_LM;
     pl->unit = NULL;
 }
 
@@ -256,6 +259,8 @@ int32_t read_necronomicon(struct player* pl)
 
 int32_t levelup_ml(struct player* pl)
 {
+    int32_t exp_issue = -1;
+    int32_t money_issue = -2;
     switch (pl->mechanics_level_skill)
     {
     case 0:
@@ -266,7 +271,14 @@ int32_t levelup_ml(struct player* pl)
                 pl->money = pl->money - 70;
                 return 1;
             }
-            else { return 0; }
+            if (pl->exp_ml < 50)
+            {
+                return exp_issue;
+            }
+            if (pl->money < 70)
+            {
+                return money_issue;
+            }
             break;
         }
 
@@ -278,7 +290,14 @@ int32_t levelup_ml(struct player* pl)
                 pl->money = pl->money - 300;
                 return 2;
             }
-            else { return 0; }
+            if (pl->exp_ml < 200)
+            {
+                return exp_issue;
+            }
+            if (pl->money < 300)
+            {
+                return money_issue;
+            }
             break;
         }
 
@@ -290,7 +309,14 @@ int32_t levelup_ml(struct player* pl)
                 pl->money = pl->money - 465;
                 return 3;
             }
-            else { return 0; }
+            if (pl->exp_ml < 450)
+            {
+                return exp_issue;
+            }
+            if (pl->money < 465)
+            {
+                return money_issue;
+            }
             break;
         }
 
@@ -302,7 +328,14 @@ int32_t levelup_ml(struct player* pl)
                 pl->money = pl->money - 550;
                 return 4;
             }
-            else { return 0; }
+            if (pl->exp_ml < 750)
+            {
+                return exp_issue;
+            }
+            if (pl->money < 550)
+            {
+                return money_issue;
+            }
             break;
         }
 
@@ -314,7 +347,14 @@ int32_t levelup_ml(struct player* pl)
                 pl->money = pl->money - 600;
                 return 5;
             }
-            else { return 0; }
+            if (pl->exp_ml < 950)
+            {
+                return exp_issue;
+            }
+            if (pl->money < 600)
+            {
+                return money_issue;
+            }
             break;
         }
 
@@ -326,7 +366,14 @@ int32_t levelup_ml(struct player* pl)
                 pl->money = pl->money - 870;
                 return 6;
             }
-            else { return 0; }
+            if (pl->exp_ml < 1100)
+            {
+                return exp_issue;
+            }
+            if (pl->money < 870)
+            {
+                return money_issue;
+            }
             break;
         }
 

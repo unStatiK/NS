@@ -42,9 +42,11 @@ enum UnitType {
     DAEMON  = 2
 };
 
+char* get_static_filename_with_save();
 int32_t write_int(FILE* fp, int32_t value);
 int32_t buf_to_int(const unsigned char buf[]);
 void save_state();
+int32_t random_number(int32_t min_num, int32_t max_num);
 void build_unit(struct units* lst, int32_t danger_level, int32_t damage, int32_t hp, int32_t type);
 void generate_zones();
 void gen_units_for_zone_I(struct units *lst);

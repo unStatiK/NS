@@ -4,8 +4,8 @@
 #include <string.h>
 #include <stdint.h>
 
-#define MAX_EXP_CL 2500
-#define MAX_EXP_ML 1000
+#define MAX_EXP_LC 2500
+#define MAX_EXP_LM 1100
 #define MAX_MONEY 100000000
 
 struct player
@@ -31,6 +31,7 @@ struct summoned_unit
     int32_t max_hp;
     int32_t danger_level;
     int32_t damage;
+    int32_t type;
     struct mechanics_list* ml;
 };
 

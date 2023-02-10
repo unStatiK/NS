@@ -38,8 +38,9 @@ int32_t current_unit_damage;
 int32_t current_enemy_damage;
 int32_t damage_type;
 
-static int32_t refresh(lua_State* L)
+static int32_t init_and_refresh(lua_State* L)
 {
+    srand((unsigned int)time(NULL));
     disable_all_flags();
     return 1;
 }
@@ -184,7 +185,7 @@ static int32_t load(lua_State* L)
     unsigned char buf[4];
 
     s_player = (struct player*)malloc(sizeof(struct player));
-    out = fopen("save.ns", "rb");
+    out = fopen(FILENAME_WITH_SAVE, "rb");
 
     fread(buf, 4, 1, out);
     buf_to_int(buf);
@@ -254,12 +255,15 @@ static int32_t load(lua_State* L)
 
         fread(buf, 4, 1, out);
         s_player->unit->ml->neirosynaptic = buf_to_int(buf);
+
+        fread(buf, 4, 1, out);
+        s_player->unit->type = buf_to_int(buf);
     }
     fclose(out);
 
     s_player->max_money = MAX_MONEY;
-    s_player->max_exp_cl = MAX_EXP_CL;
-    s_player->max_exp_ml = MAX_EXP_ML;
+    s_player->max_exp_cl = MAX_EXP_LC;
+    s_player->max_exp_ml = MAX_EXP_LM;
 
     generate_zones();
     enable_flags(SHOW_ZONE_INFO_FLAG | AT_HOME_FLAG);
@@ -278,7 +282,7 @@ void save_state()
     FILE* tf;
     int32_t sz = 0;
     int32_t fu = 0;
-    tf = fopen("save.ns", "wb");
+    tf = fopen(FILENAME_WITH_SAVE, "wb");
     sz = strlen(s_player->name);
 
     write_int(tf, NS_FILE_VERSION);
@@ -310,8 +314,14 @@ void save_state()
         write_int(tf, s_player->unit->ml->plazma);
         write_int(tf, s_player->unit->ml->gun);
         write_int(tf, s_player->unit->ml->neirosynaptic);
+        write_int(tf, s_player->unit->type);
     }
     fclose(tf);
+}
+
+char* get_static_filename_with_save()
+{
+    return FILENAME_WITH_SAVE;
 }
 
 int32_t write_int(FILE* fp, int32_t value)
@@ -333,6 +343,12 @@ int32_t buf_to_int(const unsigned char buf[])
 {
     int32_t value = (buf[0] << 24) + (buf[1] << 16) + (buf[2] << 8) + buf[3];
     return value;
+}
+
+static int32_t get_filename_with_save(lua_State* L)
+{
+    lua_pushstring(L, get_static_filename_with_save());
+    return 1;
 }
 
 static int32_t is_home(lua_State* L)
@@ -396,14 +412,13 @@ static int32_t call_unit(lua_State* L)
     int32_t max_ld = 0;
     int32_t min_ld = 0;
     int32_t type = 0;
-    int32_t sum = 0;
     int32_t max_s = 0;
     int32_t f_first_c = 0;
-    srand((unsigned int)time(NULL));
+    int32_t is_daemon_found = 0;
 
     if (id >= 3)
     {
-        type = rand() % 2 + 1;
+        type = random_number(1, 2);
     }
     else
     {
@@ -482,9 +497,7 @@ static int32_t call_unit(lua_State* L)
         }
     }
 
-    srand((unsigned int)time(NULL));
-    sum = max_ld - min_ld;
-    r_unit = rand() % (sum + 1) + min_ld;
+    r_unit = random_number(min_ld, max_ld);
     if (type == NORMAL)
     {
         if (s_player->call_level_skill < 2)
@@ -546,9 +559,18 @@ static int32_t call_unit(lua_State* L)
             }
             if (type == DAEMON)
             {
-                while (zones->units->unit->danger_level != r_unit && zones->units->unit->type != DAEMON)
+                is_daemon_found = 0;
+                if (zones->units->unit->type == DAEMON && zones->units->unit->danger_level == r_unit)
+                {
+                    is_daemon_found = 1;
+                }
+                while (is_daemon_found == 0)
                 {
                     zones->units = zones->units->next_unit;
+                    if (zones->units->unit->type == DAEMON && zones->units->unit->danger_level == r_unit)
+                    {
+                        is_daemon_found = 1;
+                    }
                 }
             }
             if (s_player->unit == NULL)
@@ -570,7 +592,7 @@ static int32_t call_unit(lua_State* L)
             s_player->unit->ml->gun = 0;
             s_player->unit->ml->plazma = 0;
             s_player->unit->ml->neirosynaptic = 0;
-
+            s_player->unit->type = zones->units->unit->type;
 
             if (f_first_c == 1)
             {
@@ -618,7 +640,7 @@ static int32_t set_start_fight_mode(lua_State* L)
 
 static int32_t set_finish_fight(lua_State* L)
 {
-    enable_flags(END_FIGHT_PHASE_FLAG);
+    enable_flags(END_FIGHT_PHASE_FLAG | AT_ZONE_FLAG);
     return 1;
 }
 
@@ -627,6 +649,7 @@ static int32_t check_zone_unit_ld(lua_State* L)
     int32_t max_ld;
     int32_t min_ld;
     int32_t ld;
+    int32_t type = random_number(1, 2);
 
     switch (zones->id)
     {
@@ -635,6 +658,7 @@ static int32_t check_zone_unit_ld(lua_State* L)
             zones->units = zone1_units_head;
             min_ld = ZONE_1_UNIT_MIN_DANGER_LEVEL;
             max_ld = ZONE_1_UNIT_MAX_DANGER_LEVEL;
+            type = NORMAL;
             break;
         }
     case 2:
@@ -642,6 +666,7 @@ static int32_t check_zone_unit_ld(lua_State* L)
             zones->units = zone2_units_head;
             min_ld = ZONE_2_UNIT_MIN_DANGER_LEVEL;
             max_ld = ZONE_2_UNIT_MAX_DANGER_LEVEL;
+            type = NORMAL;
             break;
         }
     case 3:
@@ -649,6 +674,17 @@ static int32_t check_zone_unit_ld(lua_State* L)
             zones->units = zone3_units_head;
             min_ld = ZONE_3_UNIT_MIN_DANGER_LEVEL;
             max_ld = ZONE_3_UNIT_MAX_DANGER_LEVEL;
+            if (type == DAEMON)
+            {
+                if (min_ld > ZONE_3_DAEMON_MIN_DANGER_LEVEL)
+                {
+                    min_ld = ZONE_3_DAEMON_MIN_DANGER_LEVEL;
+                }
+                if (max_ld < ZONE_3_DAEMON_MAX_DANGER_LEVEL)
+                {
+                    max_ld = ZONE_3_DAEMON_MAX_DANGER_LEVEL;
+                }
+            }
             break;
         }
     case 4:
@@ -656,6 +692,17 @@ static int32_t check_zone_unit_ld(lua_State* L)
             zones->units = zone4_units_head;
             min_ld = ZONE_4_UNIT_MIN_DANGER_LEVEL;
             max_ld = ZONE_4_UNIT_MAX_DANGER_LEVEL;
+            if (type == DAEMON)
+            {
+                if (min_ld > ZONE_4_DAEMON_MIN_DANGER_LEVEL)
+                {
+                    min_ld = ZONE_4_DAEMON_MIN_DANGER_LEVEL;
+                }
+                if (max_ld < ZONE_4_DAEMON_MAX_DANGER_LEVEL)
+                {
+                    max_ld = ZONE_4_DAEMON_MAX_DANGER_LEVEL;
+                }
+            }
             break;
         }
     case 5:
@@ -663,6 +710,17 @@ static int32_t check_zone_unit_ld(lua_State* L)
             zones->units = zone5_units_head;
             min_ld = ZONE_5_UNIT_MIN_DANGER_LEVEL;
             max_ld = ZONE_5_UNIT_MAX_DANGER_LEVEL;
+            if (type == DAEMON)
+            {
+                if (min_ld > ZONE_5_DAEMON_MIN_DANGER_LEVEL)
+                {
+                    min_ld = ZONE_5_DAEMON_MIN_DANGER_LEVEL;
+                }
+                if (max_ld < ZONE_5_DAEMON_MAX_DANGER_LEVEL)
+                {
+                    max_ld = ZONE_5_DAEMON_MAX_DANGER_LEVEL;
+                }
+            }
             break;
         }
     default: break;
@@ -674,17 +732,51 @@ static int32_t check_zone_unit_ld(lua_State* L)
     {
         if (ld >= min_ld && ld <= max_ld)
         {
-            while (zones->units->unit->danger_level != ld)
+            int32_t is_daemon_found = 0;
+            if (type == NORMAL)
             {
-                zones->units = zones->units->next_unit;
+                while (zones->units->unit->danger_level != ld)
+                {
+                    zones->units = zones->units->next_unit;
+                }
+            }
+            if (type == DAEMON)
+            {
+                if (zones->units->unit->type == DAEMON && zones->units->unit->danger_level == ld)
+                {
+                    is_daemon_found = 1;
+                }
+                while (is_daemon_found == 0)
+                {
+                    zones->units = zones->units->next_unit;
+                    if (zones->units != NULL)
+                    {
+                        if (zones->units->unit->type == DAEMON && zones->units->unit->danger_level == ld)
+                        {
+                            is_daemon_found = 1;
+                        }
+                    }
+                    else
+                    {
+                        is_daemon_found = 0;
+                        break;
+                    }
+                }
             }
 
-            active_enemy = (struct unit*)malloc(sizeof(struct unit));
-            active_enemy->hp = zones->units->unit->hp;
-            active_enemy->danger_level = zones->units->unit->danger_level;
-            active_enemy->damage = zones->units->unit->damage;
-            active_enemy->type = zones->units->unit->type;
-            lua_pushinteger(L, 1);
+            if ((type == DAEMON && is_daemon_found == 1) || type == NORMAL)
+            {
+                active_enemy = (struct unit*)malloc(sizeof(struct unit));
+                active_enemy->hp = zones->units->unit->hp;
+                active_enemy->danger_level = zones->units->unit->danger_level;
+                active_enemy->damage = zones->units->unit->damage;
+                active_enemy->type = zones->units->unit->type;
+                lua_pushinteger(L, 1);
+            }
+            else
+            {
+                lua_pushinteger(L, 0);
+            }
         }
         else
         {
@@ -704,6 +796,17 @@ static int32_t get_current_unit_damage(lua_State* L)
     return 1;
 }
 
+static int32_t get_enemy_type(lua_State* L)
+{
+    int32_t type = -1;
+    if (active_enemy != NULL)
+    {
+        type = active_enemy->type;
+    }
+    lua_pushinteger(L, type);
+    return 1;
+}
+
 static int32_t get_enemy_damage(lua_State* L)
 {
     lua_pushinteger(L, current_enemy_damage);
@@ -712,8 +815,6 @@ static int32_t get_enemy_damage(lua_State* L)
 
 static int32_t fight(lua_State* L)
 {
-    srand((unsigned int)time(NULL));
-
     current_unit_damage = 0;
     current_unit_damage = s_player->unit->damage + (s_player->unit->ml->gun / 2) + (s_player->unit->ml->neirosynaptic *
         5);
@@ -740,7 +841,7 @@ static int32_t fight(lua_State* L)
     }
     if (is_flag_enable(END_FIGHT_PHASE_FLAG) != enable)
     {
-        damage_type = rand() % 2;
+        damage_type = random_number(0, 2);
         if (damage_type == 0)
         {
             current_enemy_damage = active_enemy->damage;
@@ -805,6 +906,19 @@ static int32_t check_unit(lua_State* L)
     else
     {
         lua_pushboolean(L, 0);
+    }
+    return 1;
+}
+
+static int32_t get_unit_type(lua_State* L)
+{
+    if (s_player->unit != NULL)
+    {
+        lua_pushinteger(L, s_player->unit->type);
+    }
+    else
+    {
+        lua_pushinteger(L, -1);
     }
     return 1;
 }
@@ -981,9 +1095,9 @@ static int32_t get_zone_min_unit_LD(lua_State* L)
             }
         default: break;
         }
+        lua_pushinteger(L, zones->units->unit->danger_level);
     }
 
-    lua_pushinteger(L, zones->units->unit->danger_level);
     return 1;
 }
 
@@ -1247,7 +1361,7 @@ DLL_PUBLIC int32_t luaopen_nslib(lua_State* L)
 {
     static const luaL_reg Map[] = {
         {"get_lib_version", get_lib_version},
-        {"refresh", refresh},
+        {"refresh", init_and_refresh},
         {"get_name_pl", get_name_pl},
         {"get_hp_pl", get_hp_pl},
         {"get_maxhp_pl", get_maxhp_pl},
@@ -1296,12 +1410,14 @@ DLL_PUBLIC int32_t luaopen_nslib(lua_State* L)
         {"call_unit", call_unit},
         {"get_hp_unit", get_hp_unit},
         {"get_ld_unit", get_ld_unit},
+        {"get_enemy_type", get_enemy_type},
         {"get_damage_unit", get_damage_unit},
         {"get_armour_unit", get_armour_unit},
         {"get_plazma_unit", get_plazma_unit},
         {"get_gun_unit", get_gun_unit},
         {"get_neirosynaptic_unit", get_neirosynaptic_unit},
         {"get_maxhp_unit", get_maxhp_unit},
+        {"get_unit_type", get_unit_type},
         {"save", save},
         {"is_fight_mode", is_fight_mode},
         {"set_fight_mode", set_fight_mode},
@@ -1315,10 +1431,39 @@ DLL_PUBLIC int32_t luaopen_nslib(lua_State* L)
         {"check_type_fight", check_type_fight},
         {"fight", fight},
         {"set_finish_fight", set_finish_fight},
+        {"get_filename_with_save", get_filename_with_save},
         {NULL,NULL}
     };
     luaL_register(L, "nslib", Map);
     return 1;
+}
+
+int32_t random_number(int32_t min_num, int32_t max_num)
+{
+    int32_t result = 0, low_num = 0, hi_num = 0, base = 0;
+
+    if (min_num < max_num)
+    {
+        low_num = min_num;
+        hi_num = max_num + 1;
+    }
+    else
+    {
+        low_num = max_num + 1;
+        hi_num = min_num;
+    }
+
+    base = hi_num - low_num;
+    if (base != 0)
+    {
+        result = (rand() % base) + low_num;
+    }
+    else
+    {
+        result = (rand() % (hi_num + 1)) + low_num;
+    }
+
+    return result;
 }
 
 void build_unit(struct units* lst, int32_t danger_level, int32_t damage, int32_t hp, int32_t type)
