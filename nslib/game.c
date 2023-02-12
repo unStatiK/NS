@@ -766,6 +766,15 @@ static int32_t check_zone_unit_ld(lua_State* L)
 
             if ((type == DAEMON && is_daemon_found == 1) || type == NORMAL)
             {
+				if (s_player->unit != NULL)
+				{
+					int32_t danger_ld_diff = s_player->unit->danger_level - zones->units->unit->danger_level;
+					if (danger_ld_diff > 1) 
+					{
+						lua_pushinteger(L, 4);
+						return 1;
+					}
+				}
                 active_enemy = (struct unit*)malloc(sizeof(struct unit));
                 active_enemy->hp = zones->units->unit->hp;
                 active_enemy->danger_level = zones->units->unit->danger_level;

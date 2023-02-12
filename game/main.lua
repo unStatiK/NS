@@ -563,6 +563,10 @@ function love.draw()
                 love.graphics.print("No unit with this LD at this zone!", 170, 80)
                 nslib.set_finish_fight()
             end
+			if command_result_flag == 4 then
+                love.graphics.print("Too small LD for battle!", 170, 80)
+                nslib.set_finish_fight()
+            end
         end
 
         if act_f == 1 then
