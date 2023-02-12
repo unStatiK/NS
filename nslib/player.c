@@ -134,7 +134,7 @@ int32_t create_armourour(struct player* pl)
     {
         if (pl->mechanics_level_skill >= 1)
         {
-            pl->unit->ml->armour = 55;
+            pl->unit->ml->armour = 20;
             return 1;
         }
         else
@@ -154,7 +154,7 @@ int32_t create_superarmourour(struct player* pl)
     {
         if (pl->mechanics_level_skill >= 2)
         {
-            pl->unit->ml->armour = 100;
+            pl->unit->ml->armour = 30;
             return 1;
         }
         else
@@ -174,7 +174,7 @@ int32_t create_gun(struct player* pl)
     {
         if (pl->mechanics_level_skill >= 3)
         {
-            pl->unit->ml->gun = 70;
+            pl->unit->ml->gun = 30;
             return 1;
         }
         else
@@ -194,7 +194,7 @@ int32_t create_rockets(struct player* pl)
     {
         if (pl->mechanics_level_skill >= 4)
         {
-            pl->unit->ml->gun = 150;
+            pl->unit->ml->gun = 75;
             return 1;
         }
         else

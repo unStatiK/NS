@@ -815,9 +815,10 @@ static int32_t get_enemy_damage(lua_State* L)
 
 static int32_t fight(lua_State* L)
 {
+	int32_t gun_div = s_player->unit->ml->gun == 30 ? 2 : 3;
     current_unit_damage = 0;
-    current_unit_damage = s_player->unit->damage + (s_player->unit->ml->gun / 2) + (s_player->unit->ml->neirosynaptic *
-        5);
+    current_unit_damage = s_player->unit->damage + (s_player->unit->ml->gun / gun_div) + (s_player->unit->ml->neirosynaptic *
+        4);
     current_enemy_damage = 0;
 
     active_enemy->hp = active_enemy->hp - current_unit_damage;
@@ -826,11 +827,11 @@ static int32_t fight(lua_State* L)
         enable_flags(END_FIGHT_PHASE_FLAG | IS_WIN_FIGHT_FLAG | AT_ZONE_FLAG);
         if ((s_player->exp_cl + 40) <= s_player->max_exp_cl)
         {
-            s_player->exp_cl = s_player->exp_cl + 40;
+            s_player->exp_cl = s_player->exp_cl + 20;
         }
         if ((s_player->money + 100) <= s_player->max_money)
         {
-            s_player->money = s_player->money + 100;
+            s_player->money = s_player->money + 45;
         }
         if ((s_player->exp_ml + 10) <= s_player->max_exp_ml)
         {
@@ -849,7 +850,8 @@ static int32_t fight(lua_State* L)
         }
         else
         {
-            current_enemy_damage = active_enemy->damage - (s_player->unit->ml->armour / 3) - (s_player->unit->ml->plazma
+			int32_t armour_div = s_player->unit->ml->armour == 20 ? 3 : 4;
+            current_enemy_damage = active_enemy->damage - (s_player->unit->ml->armour / armour_div) - (s_player->unit->ml->plazma
                 * 2);
             s_player->unit->hp = s_player->unit->hp - current_enemy_damage;
         }
@@ -1523,80 +1525,80 @@ void generate_zones()
 
 void gen_units_for_zone_I(struct units* lst)
 {
-    build_unit(lst, ZONE_1_UNIT_MIN_DANGER_LEVEL, 5, 10, NORMAL);
-    build_next_unit(lst, 2, 7, 20, NORMAL);
-    build_next_unit(lst, 3, 10, 30, NORMAL);
-    build_next_unit(lst, 4, 12, 40, NORMAL);
-    build_next_unit(lst, 5, 20, 50, NORMAL);
-    build_next_unit(lst, ZONE_1_UNIT_MAX_DANGER_LEVEL, 30, 60, NORMAL);
+    build_unit(lst, ZONE_1_UNIT_MIN_DANGER_LEVEL, 10, 40, NORMAL);
+    build_next_unit(lst, 2, 12, 50, NORMAL);
+    build_next_unit(lst, 3, 14, 60, NORMAL);
+    build_next_unit(lst, 4, 16, 70, NORMAL);
+    build_next_unit(lst, 5, 20, 80, NORMAL);
+    build_next_unit(lst, ZONE_1_UNIT_MAX_DANGER_LEVEL, 30, 90, NORMAL);
     lst->next_unit = NULL;
 }
 
 void gen_units_for_zone_II(struct units* lst)
 {
-    build_unit(lst, ZONE_2_UNIT_MIN_DANGER_LEVEL, 45, 70, NORMAL);
-    build_next_unit(lst, 8, 55, 80, NORMAL);
-    build_next_unit(lst, 9, 65, 90, NORMAL);
-    build_next_unit(lst, 10, 80, 100, NORMAL);
-    build_next_unit(lst, 11, 100, 110, NORMAL);
-    build_next_unit(lst, ZONE_2_UNIT_MAX_DANGER_LEVEL, 110, 120, NORMAL);
+    build_unit(lst, ZONE_2_UNIT_MIN_DANGER_LEVEL, 40, 100, NORMAL);
+    build_next_unit(lst, 8, 50, 110, NORMAL);
+    build_next_unit(lst, 9, 60, 120, NORMAL);
+    build_next_unit(lst, 10, 70, 130, NORMAL);
+    build_next_unit(lst, 11, 80, 140, NORMAL);
+    build_next_unit(lst, ZONE_2_UNIT_MAX_DANGER_LEVEL, 90, 150, NORMAL);
     lst->next_unit = NULL;
 }
 
 void gen_units_for_zone_III(struct units* lst)
 {
-    build_unit(lst, ZONE_3_UNIT_MIN_DANGER_LEVEL, 130, 130, NORMAL);
-    build_next_unit(lst, 14, 150, 140, NORMAL);
-    build_next_unit(lst, 15, 170, 150, NORMAL);
-    build_next_unit(lst, 16, 180, 160, NORMAL);
-    build_next_unit(lst, 17, 190, 170, NORMAL);
-    build_next_unit(lst, ZONE_3_UNIT_MAX_DANGER_LEVEL, 210, 180, NORMAL);
-    build_next_unit(lst, ZONE_3_DAEMON_MIN_DANGER_LEVEL, 240, 200, DAEMON);
-    build_next_unit(lst, 2, 260, 220, DAEMON);
-    build_next_unit(lst, 3, 280, 240, DAEMON);
-    build_next_unit(lst, 4, 300, 260, DAEMON);
-    build_next_unit(lst, 5, 320, 280, DAEMON);
-    build_next_unit(lst, 6, 340, 300, DAEMON);
-    build_next_unit(lst, 7, 360, 320, DAEMON);
-    build_next_unit(lst, ZONE_3_DAEMON_MAX_DANGER_LEVEL, 380, 340, DAEMON);
+    build_unit(lst, ZONE_3_UNIT_MIN_DANGER_LEVEL, 100, 160, NORMAL);
+    build_next_unit(lst, 14, 110, 170, NORMAL);
+    build_next_unit(lst, 15, 120, 180, NORMAL);
+    build_next_unit(lst, 16, 130, 190, NORMAL);
+    build_next_unit(lst, 17, 140, 200, NORMAL);
+    build_next_unit(lst, ZONE_3_UNIT_MAX_DANGER_LEVEL, 150, 210, NORMAL);
+    build_next_unit(lst, ZONE_3_DAEMON_MIN_DANGER_LEVEL, 240, 300, DAEMON);
+    build_next_unit(lst, 2, 260, 320, DAEMON);
+    build_next_unit(lst, 3, 280, 340, DAEMON);
+    build_next_unit(lst, 4, 300, 360, DAEMON);
+    build_next_unit(lst, 5, 320, 380, DAEMON);
+    build_next_unit(lst, 6, 340, 400, DAEMON);
+    build_next_unit(lst, 7, 360, 420, DAEMON);
+    build_next_unit(lst, ZONE_3_DAEMON_MAX_DANGER_LEVEL, 380, 440, DAEMON);
     lst->next_unit = NULL;
 }
 
 void gen_units_for_zone_IV(struct units* lst)
 {
-    build_unit(lst, ZONE_4_UNIT_MIN_DANGER_LEVEL, 220, 190, NORMAL);
-    build_next_unit(lst, 20, 230, 200, NORMAL);
-    build_next_unit(lst, 21, 240, 210, NORMAL);
-    build_next_unit(lst, 22, 250, 220, NORMAL);
-    build_next_unit(lst, 23, 270, 230, NORMAL);
-    build_next_unit(lst, ZONE_4_UNIT_MAX_DANGER_LEVEL, 290, 240, NORMAL);
-    build_next_unit(lst, ZONE_4_DAEMON_MIN_DANGER_LEVEL, 400, 360, DAEMON);
-    build_next_unit(lst, 10, 420, 380, DAEMON);
-    build_next_unit(lst, 11, 440, 400, DAEMON);
-    build_next_unit(lst, 12, 460, 420, DAEMON);
-    build_next_unit(lst, 13, 480, 440, DAEMON);
-    build_next_unit(lst, 14, 500, 460, DAEMON);
-    build_next_unit(lst, 15, 520, 480, DAEMON);
-    build_next_unit(lst, 16, 540, 500, DAEMON);
-    build_next_unit(lst, 17, 560, 520, DAEMON);
-    build_next_unit(lst, ZONE_4_DAEMON_MAX_DANGER_LEVEL, 580, 540, DAEMON);
+    build_unit(lst, ZONE_4_UNIT_MIN_DANGER_LEVEL, 160, 220, NORMAL);
+    build_next_unit(lst, 20, 170, 230, NORMAL);
+    build_next_unit(lst, 21, 190, 240, NORMAL);
+    build_next_unit(lst, 22, 210, 250, NORMAL);
+    build_next_unit(lst, 23, 230, 270, NORMAL);
+    build_next_unit(lst, ZONE_4_UNIT_MAX_DANGER_LEVEL, 250, 290, NORMAL);
+    build_next_unit(lst, ZONE_4_DAEMON_MIN_DANGER_LEVEL, 400, 460, DAEMON);
+    build_next_unit(lst, 10, 420, 480, DAEMON);
+    build_next_unit(lst, 11, 440, 500, DAEMON);
+    build_next_unit(lst, 12, 460, 520, DAEMON);
+    build_next_unit(lst, 13, 480, 540, DAEMON);
+    build_next_unit(lst, 14, 500, 560, DAEMON);
+    build_next_unit(lst, 15, 520, 580, DAEMON);
+    build_next_unit(lst, 16, 540, 600, DAEMON);
+    build_next_unit(lst, 17, 560, 620, DAEMON);
+    build_next_unit(lst, ZONE_4_DAEMON_MAX_DANGER_LEVEL, 580, 640, DAEMON);
     lst->next_unit = NULL;
 }
 
 void gen_units_for_zone_V(struct units* lst)
 {
-    build_unit(lst, ZONE_5_UNIT_MIN_DANGER_LEVEL, 300, 250, NORMAL);
-    build_next_unit(lst, 26, 320, 260, NORMAL);
-    build_next_unit(lst, 27, 330, 270, NORMAL);
-    build_next_unit(lst, 28, 350, 280, NORMAL);
-    build_next_unit(lst, 29, 370, 290, NORMAL);
-    build_next_unit(lst, ZONE_5_UNIT_MAX_DANGER_LEVEL, 400, 300, NORMAL);
-    build_next_unit(lst, ZONE_5_DAEMON_MIN_DANGER_LEVEL, 600, 560, DAEMON);
-    build_next_unit(lst, 20, 620, 580, DAEMON);
-    build_next_unit(lst, 21, 640, 600, DAEMON);
-    build_next_unit(lst, 22, 660, 620, DAEMON);
-    build_next_unit(lst, 23, 680, 640, DAEMON);
-    build_next_unit(lst, 24, 700, 660, DAEMON);
-    build_next_unit(lst, ZONE_5_DAEMON_MAX_DANGER_LEVEL, 720, 680, DAEMON);
+    build_unit(lst, ZONE_5_UNIT_MIN_DANGER_LEVEL, 260, 310, NORMAL);
+    build_next_unit(lst, 26, 270, 330, NORMAL);
+    build_next_unit(lst, 27, 280, 350, NORMAL);
+    build_next_unit(lst, 28, 290, 370, NORMAL);
+    build_next_unit(lst, 29, 300, 390, NORMAL);
+    build_next_unit(lst, ZONE_5_UNIT_MAX_DANGER_LEVEL, 315, 410, NORMAL);
+    build_next_unit(lst, ZONE_5_DAEMON_MIN_DANGER_LEVEL, 600, 660, DAEMON);
+    build_next_unit(lst, 20, 620, 680, DAEMON);
+    build_next_unit(lst, 21, 640, 700, DAEMON);
+    build_next_unit(lst, 22, 660, 720, DAEMON);
+    build_next_unit(lst, 23, 680, 740, DAEMON);
+    build_next_unit(lst, 24, 700, 760, DAEMON);
+    build_next_unit(lst, ZONE_5_DAEMON_MAX_DANGER_LEVEL, 720, 780, DAEMON);
     lst->next_unit = NULL;
 }
