@@ -149,7 +149,7 @@ static int32_t get_neirosynaptic_unit(lua_State* L)
 
 static int32_t restore(lua_State* L)
 {
-    restore_hp(s_player);
+	lua_pushinteger(L, restore_hp(s_player));
     return 1;
 }
 

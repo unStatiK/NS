@@ -35,13 +35,30 @@ void check_levelup(struct player* pl, const int32_t exp)
     if (exp >= 2300) pl->call_level_skill = 8;
 }
 
-void restore_hp(struct player* pl)
+int32_t restore_hp(struct player* pl)
 {
+	if (pl->hp == pl->max_hp && pl->unit == NULL)
+	{
+		return 1;
+	}
+
+	if (pl->hp == pl->max_hp && pl->unit != NULL && pl->unit->hp == pl->unit->max_hp)
+	{
+		return 1;
+	}
+
+	if (pl->money < 100)
+	{
+		return -1;
+	}
+
     pl->hp = pl->max_hp;
     if (pl->unit != NULL)
     {
         pl->unit->hp = pl->unit->max_hp;
     }
+	pl->money = pl->money - 100;
+	return 1;
 }
 
 int32_t get_hp(struct player* pl)

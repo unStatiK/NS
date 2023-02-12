@@ -45,7 +45,7 @@ struct mechanics_list
 
 void new_character(struct player* pl, const char* name);
 void check_levelup(struct player* pl, const int32_t exp);
-void restore_hp(struct player* pl);
+int32_t restore_hp(struct player* pl);
 int32_t create_armourour(struct player* pl);
 int32_t create_superarmourour(struct player* pl);
 int32_t create_gun(struct player* pl);

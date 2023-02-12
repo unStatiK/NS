@@ -416,7 +416,12 @@ function love.draw()
         end
 
         if act_rs == 1 then
-            love.graphics.print("HP is restored !", 170, 50)
+			if command_result_flag == 1 then
+				love.graphics.print("HP is restored !", 170, 50)
+			end
+			if command_result_flag == -1 then
+				love.graphics.print("Not enought money for HP restoring ! Need 100$", 170, 50)
+			end
         end
 
         if act_rn == 1 then
@@ -861,7 +866,7 @@ function check_cli()
             if nslib.is_home() == 1 then
                 input_text = ""
                 set_flags(0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-                nslib.restore()
+                command_result_flag = nslib.restore()
             end
         end
         if input_text == "rn" then
