@@ -1043,7 +1043,12 @@ function check_cli()
 end
 
 function is_file_with_save_exist()
-    return love.filesystem.exists(nslib.get_filename_with_save())
+    local is_exist = nslib.is_save_exist()
+	if is_exist == 1 then
+		return true
+	else
+		return false
+	end   
 end
 
 function trim(s)

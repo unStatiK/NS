@@ -368,6 +368,24 @@ int32_t buf_to_int(const unsigned char buf[])
     return value;
 }
 
+static int32_t is_filename_with_save_exist(lua_State* L)
+{
+	int32_t stack_count = 0;
+	FILE* out;
+    errno_t err;    
+    err = fopen_s(&out, FILENAME_WITH_SAVE, "rb");
+	if (err == 0) 
+	{
+		stack_count += invoke_push_integer(L, TRUE);
+		fclose(out);
+	}
+	else 
+	{
+		stack_count += invoke_push_integer(L, FALSE);
+	}
+    return stack_count;
+}
+
 static int32_t get_filename_with_save(lua_State* L)
 {
     int32_t stack_count = 0;
@@ -1508,7 +1526,8 @@ DLL_PUBLIC int32_t luaopen_nslib(lua_State* L)
         {"fight", fight},
         {"set_finish_fight", set_finish_fight},
         {"get_filename_with_save", get_filename_with_save},
-        {NULL,NULL}
+		{"is_save_exist", is_filename_with_save_exist},
+        {NULL, NULL}
     };
     luaL_register(L, "nslib", Map);
     return 1;
