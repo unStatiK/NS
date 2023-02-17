@@ -6,7 +6,7 @@
 
 void new_character(struct player* pl, const char* name)
 {
-    unsigned int len = strlen(name);
+    size_t len = strlen(name);
     pl->hp = 100;
     pl->max_hp = 100;
     pl->call_level_skill = 1;
@@ -37,28 +37,28 @@ void check_levelup(struct player* pl, const int32_t exp)
 
 int32_t restore_hp(struct player* pl)
 {
-	if (pl->hp == pl->max_hp && pl->unit == NULL)
-	{
-		return 1;
-	}
+    if (pl->hp == pl->max_hp && pl->unit == NULL)
+    {
+        return 1;
+    }
 
-	if (pl->hp == pl->max_hp && pl->unit != NULL && pl->unit->hp == pl->unit->max_hp)
-	{
-		return 1;
-	}
+    if (pl->hp == pl->max_hp && pl->unit != NULL && pl->unit->hp == pl->unit->max_hp)
+    {
+        return 1;
+    }
 
-	if (pl->money < 100)
-	{
-		return -1;
-	}
+    if (pl->money < 100)
+    {
+        return -1;
+    }
 
     pl->hp = pl->max_hp;
     if (pl->unit != NULL)
     {
         pl->unit->hp = pl->unit->max_hp;
     }
-	pl->money = pl->money - 100;
-	return 1;
+    pl->money = pl->money - 100;
+    return 1;
 }
 
 int32_t get_hp(struct player* pl)

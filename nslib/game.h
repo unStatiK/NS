@@ -1,6 +1,14 @@
 #pragma once
 #include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <time.h>
+#include "flags.h"
+#include "player.h"
+#include "version.h"
+#include "constants.h"
+#include "lua.h"
+#include "lauxlib.h"
 
 #define ZONE_1_UNIT_MIN_DANGER_LEVEL 1
 #define ZONE_1_UNIT_MAX_DANGER_LEVEL 6
@@ -42,6 +50,11 @@ enum UnitType {
     DAEMON  = 2
 };
 
+enum BooleanType {
+    TRUE = 1,
+    FALSE = 0
+};
+
 char* get_static_filename_with_save();
 int32_t write_int(FILE* fp, int32_t value);
 int32_t buf_to_int(const unsigned char buf[]);
@@ -54,3 +67,6 @@ void gen_units_for_zone_II(struct units *lst);
 void gen_units_for_zone_III(struct units *lst);
 void gen_units_for_zone_IV(struct units *lst);
 void gen_units_for_zone_V(struct units *lst);
+int32_t invoke_push_string(lua_State* L, const char* value);
+int32_t invoke_push_integer(lua_State* L, lua_Integer value);
+int32_t invoke_push_boolean(lua_State* L, enum BooleanType value);

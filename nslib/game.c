@@ -1,12 +1,4 @@
-#include <time.h>
-#include <stdlib.h>
 #include "game.h"
-#include "flags.h"
-#include "player.h"
-#include "version.h"
-#include "constants.h"
-#include "lua.h"
-#include "lauxlib.h"
 
 #if defined _WIN32 || defined _WIN64 || defined __CYGWIN__
 #define DLL_PUBLIC __declspec(dllexport)
@@ -42,127 +34,147 @@ static int32_t init_and_refresh(lua_State* L)
 {
     srand((unsigned int)time(NULL));
     disable_all_flags();
-    return 1;
+    return 0;
 }
 
 static int32_t get_lib_version(lua_State* L)
 {
-    lua_pushstring(L, NSLIB_VERSION);
-    return 1;
+    int32_t stack_count = 0;
+    stack_count += invoke_push_string(L, NSLIB_VERSION);
+    return stack_count;
 }
 
 static int32_t get_name_pl(lua_State* L)
 {
-    lua_pushstring(L, get_name(s_player));
-    return 1;
+    int32_t stack_count = 0;
+    stack_count += invoke_push_string(L, get_name(s_player));
+    return stack_count;
 }
 
 static int32_t get_hp_pl(lua_State* L)
 {
-    lua_pushinteger(L, get_hp(s_player));
-    return 1;
+    int32_t stack_count = 0;
+    stack_count += invoke_push_integer(L, get_hp(s_player));
+    return stack_count;
 }
 
 static int32_t get_maxhp_pl(lua_State* L)
 {
-    lua_pushinteger(L, get_max_hp(s_player));
-    return 1;
+    int32_t stack_count = 0;
+    stack_count += invoke_push_integer(L, get_max_hp(s_player));
+    return stack_count;
 }
 
 static int32_t get_call_level_skill_pl(lua_State* L)
 {
-    lua_pushinteger(L, get_call_level_skill(s_player));
-    return 1;
+    int32_t stack_count = 0;
+    stack_count += invoke_push_integer(L, get_call_level_skill(s_player));
+    return stack_count;
 }
 
 static int32_t get_mechanics_level_skill_pl(lua_State* L)
 {
-    lua_pushinteger(L, get_mechanics_level_skill(s_player));
-    return 1;
+    int32_t stack_count = 0;
+    stack_count += invoke_push_integer(L, get_mechanics_level_skill(s_player));
+    return stack_count;
 }
 
 static int32_t get_exp_cl_pl(lua_State* L)
 {
-    lua_pushinteger(L, get_exp_cl(s_player));
-    return 1;
+    int32_t stack_count = 0;
+    stack_count += invoke_push_integer(L, get_exp_cl(s_player));
+    return stack_count;
 }
 
 static int32_t get_exp_ml_pl(lua_State* L)
 {
-    lua_pushinteger(L, get_exp_ml(s_player));
-    return 1;
+    int32_t stack_count = 0;
+    stack_count += invoke_push_integer(L, get_exp_ml(s_player));
+    return stack_count;
 }
 
 static int32_t get_money_pl(lua_State* L)
 {
-    lua_pushinteger(L, get_money(s_player));
-    return 1;
+    int32_t stack_count = 0;
+    stack_count += invoke_push_integer(L, get_money(s_player));
+    return stack_count;
 }
 
 static int32_t get_hp_unit(lua_State* L)
 {
-    lua_pushinteger(L, get_unit_hp(s_player));
-    return 1;
+    int32_t stack_count = 0;
+    stack_count += invoke_push_integer(L, get_unit_hp(s_player));
+    return stack_count;
 }
 
 static int32_t get_maxhp_unit(lua_State* L)
 {
-    lua_pushinteger(L, get_unit_maxhp(s_player));
-    return 1;
+    int32_t stack_count = 0;
+    stack_count += invoke_push_integer(L, get_unit_maxhp(s_player));
+    return stack_count;
 }
 
 static int32_t get_ld_unit(lua_State* L)
 {
-    lua_pushinteger(L, get_unit_ld(s_player));
-    return 1;
+    int32_t stack_count = 0;
+    stack_count += invoke_push_integer(L, get_unit_ld(s_player));
+    return stack_count;
 }
 
 static int32_t get_damage_unit(lua_State* L)
 {
-    lua_pushinteger(L, get_unit_damage(s_player));
-    return 1;
+    int32_t stack_count = 0;
+    stack_count += invoke_push_integer(L, get_unit_damage(s_player));
+    return stack_count;
 }
 
 static int32_t get_armour_unit(lua_State* L)
 {
-    lua_pushinteger(L, get_unit_armour(s_player));
-    return 1;
+    int32_t stack_count = 0;
+    stack_count += invoke_push_integer(L, get_unit_armour(s_player));
+    return stack_count;
 }
 
 static int32_t get_plazma_unit(lua_State* L)
 {
-    lua_pushinteger(L, get_unit_plazma(s_player));
-    return 1;
+    int32_t stack_count = 0;
+    stack_count += invoke_push_integer(L, get_unit_plazma(s_player));
+    return stack_count;
 }
 
 static int32_t get_gun_unit(lua_State* L)
 {
-    lua_pushinteger(L, get_unit_gun(s_player));
-    return 1;
+    int32_t stack_count = 0;
+    stack_count += invoke_push_integer(L, get_unit_gun(s_player));
+    return stack_count;
 }
 
 static int32_t get_neirosynaptic_unit(lua_State* L)
 {
-    lua_pushinteger(L, get_unit_neirosynaptic(s_player));
-    return 1;
+    int32_t stack_count = 0;
+    stack_count += invoke_push_integer(L, get_unit_neirosynaptic(s_player));
+    return stack_count;
 }
 
 static int32_t restore(lua_State* L)
 {
-	lua_pushinteger(L, restore_hp(s_player));
-    return 1;
+    int32_t stack_count = 0;
+    stack_count += invoke_push_integer(L, restore_hp(s_player));
+    return stack_count;
 }
 
 static int32_t read_necro(lua_State* L)
 {
-    lua_pushinteger(L, read_necronomicon(s_player));
-    return 1;
+    int32_t stack_count = 0;
+    stack_count += invoke_push_integer(L, read_necronomicon(s_player));
+    return stack_count;
 }
 
 static int32_t lvlup_lm(lua_State* L)
 {
-    lua_pushinteger(L, levelup_ml(s_player));
-    return 1;
+    int32_t stack_count = 0;
+    stack_count += invoke_push_integer(L, levelup_ml(s_player));
+    return stack_count;
 }
 
 static int32_t init(lua_State* L)
@@ -174,149 +186,160 @@ static int32_t init(lua_State* L)
     generate_zones();
     enable_flags(SHOW_ZONE_INFO_FLAG | AT_HOME_FLAG | END_FIGHT_PHASE_FLAG);
 
-    return 1;
+    return 0;
 }
 
 static int32_t load(lua_State* L)
 {
     FILE* out;
-    int32_t sz = 0;
-    int fu = 0;
-    unsigned char buf[4];
+    errno_t err;
 
     s_player = (struct player*)malloc(sizeof(struct player));
-    out = fopen(FILENAME_WITH_SAVE, "rb");
+    err = fopen_s(&out, FILENAME_WITH_SAVE, "rb");
 
-    fread(buf, 4, 1, out);
-    buf_to_int(buf);
-
-    fread(buf, 4, 1, out);
-    sz = buf_to_int(buf);
-
-    s_player->name = (char*)malloc(sz);
-    fread(s_player->name, sz, 1, out);
-    s_player->name[sz] = '\0';
-
-    fread(buf, 4, 1, out);
-    s_player->hp = buf_to_int(buf);
-
-    fread(buf, 4, 1, out);
-    s_player->max_hp = buf_to_int(buf);
-
-    fread(buf, 4, 1, out);
-    s_player->exp_cl = buf_to_int(buf);
-
-    fread(buf, 4, 1, out);
-    s_player->exp_ml = buf_to_int(buf);
-
-    fread(buf, 4, 1, out);
-    s_player->call_level_skill = buf_to_int(buf);
-
-    fread(buf, 4, 1, out);
-    s_player->mechanics_level_skill = buf_to_int(buf);
-
-    fread(buf, 4, 1, out);
-    s_player->money = buf_to_int(buf);
-
-    fread(buf, 4, 1, out);
-    s_player->read_necronomicon = buf_to_int(buf);
-
-    fread(buf, 4, 1, out);
-    fu = buf_to_int(buf);
-
-    if (fu == 0)
+    if (err == 0)
     {
-        s_player->unit = NULL;
+        int32_t sz = 0;
+        int fu = 0;
+        unsigned char buf[4];
+        
+        fread(buf, 4, 1, out);
+        buf_to_int(buf);
+
+        fread(buf, 4, 1, out);
+        sz = buf_to_int(buf);
+
+        s_player->name = (char*)malloc(sz);
+        fread(s_player->name, sz, 1, out);
+        s_player->name[sz] = '\0';
+
+        fread(buf, 4, 1, out);
+        s_player->hp = buf_to_int(buf);
+
+        fread(buf, 4, 1, out);
+        s_player->max_hp = buf_to_int(buf);
+
+        fread(buf, 4, 1, out);
+        s_player->exp_cl = buf_to_int(buf);
+
+        fread(buf, 4, 1, out);
+        s_player->exp_ml = buf_to_int(buf);
+
+        fread(buf, 4, 1, out);
+        s_player->call_level_skill = buf_to_int(buf);
+
+        fread(buf, 4, 1, out);
+        s_player->mechanics_level_skill = buf_to_int(buf);
+
+        fread(buf, 4, 1, out);
+        s_player->money = buf_to_int(buf);
+
+        fread(buf, 4, 1, out);
+        s_player->read_necronomicon = buf_to_int(buf);
+
+        fread(buf, 4, 1, out);
+        fu = buf_to_int(buf);
+
+        if (fu == 0)
+        {
+            s_player->unit = NULL;
+        }
+        else if (fu == 1)
+        {
+            s_player->unit = (struct summoned_unit*)malloc(sizeof(struct summoned_unit));
+            fread(buf, 4, 1, out);
+            s_player->unit->hp = buf_to_int(buf);
+
+            fread(buf, 4, 1, out);
+            s_player->unit->max_hp = buf_to_int(buf);
+
+            fread(buf, 4, 1, out);
+            s_player->unit->danger_level = buf_to_int(buf);
+
+            fread(buf, 4, 1, out);
+            s_player->unit->damage = buf_to_int(buf);
+
+            s_player->unit->ml = (struct mechanics_list*)malloc(sizeof(struct mechanics_list));
+            fread(buf, 4, 1, out);
+            s_player->unit->ml->armour = buf_to_int(buf);
+
+            fread(buf, 4, 1, out);
+            s_player->unit->ml->plazma = buf_to_int(buf);
+
+            fread(buf, 4, 1, out);
+            s_player->unit->ml->gun = buf_to_int(buf);
+
+            fread(buf, 4, 1, out);
+            s_player->unit->ml->neirosynaptic = buf_to_int(buf);
+
+            fread(buf, 4, 1, out);
+            s_player->unit->type = buf_to_int(buf);
+        }
+        fclose(out);
+
+        s_player->max_money = MAX_MONEY;
+        s_player->max_exp_cl = MAX_EXP_LC;
+        s_player->max_exp_ml = MAX_EXP_LM;
+
+        generate_zones();
+        enable_flags(SHOW_ZONE_INFO_FLAG | AT_HOME_FLAG);
     }
-    else if (fu == 1)
-    {
-        s_player->unit = (struct summoned_unit*)malloc(sizeof(struct summoned_unit));
-        fread(buf, 4, 1, out);
-        s_player->unit->hp = buf_to_int(buf);
 
-        fread(buf, 4, 1, out);
-        s_player->unit->max_hp = buf_to_int(buf);
-
-        fread(buf, 4, 1, out);
-        s_player->unit->danger_level = buf_to_int(buf);
-
-        fread(buf, 4, 1, out);
-        s_player->unit->damage = buf_to_int(buf);
-
-        s_player->unit->ml = (struct mechanics_list*)malloc(sizeof(struct mechanics_list));
-        fread(buf, 4, 1, out);
-        s_player->unit->ml->armour = buf_to_int(buf);
-
-        fread(buf, 4, 1, out);
-        s_player->unit->ml->plazma = buf_to_int(buf);
-
-        fread(buf, 4, 1, out);
-        s_player->unit->ml->gun = buf_to_int(buf);
-
-        fread(buf, 4, 1, out);
-        s_player->unit->ml->neirosynaptic = buf_to_int(buf);
-
-        fread(buf, 4, 1, out);
-        s_player->unit->type = buf_to_int(buf);
-    }
-    fclose(out);
-
-    s_player->max_money = MAX_MONEY;
-    s_player->max_exp_cl = MAX_EXP_LC;
-    s_player->max_exp_ml = MAX_EXP_LM;
-
-    generate_zones();
-    enable_flags(SHOW_ZONE_INFO_FLAG | AT_HOME_FLAG);
-
-    return 1;
+    return 0;
 }
 
 static int32_t save(lua_State* L)
 {
     save_state();
-    return 1;
+    return 0;
 }
 
 void save_state()
 {
     FILE* tf;
+    errno_t err;
     int32_t sz = 0;
-    int32_t fu = 0;
-    tf = fopen(FILENAME_WITH_SAVE, "wb");
-    sz = strlen(s_player->name);
+    
+    err = fopen_s(&tf, FILENAME_WITH_SAVE, "wb");
+    sz = (int32_t)strlen(s_player->name);
 
-    write_int(tf, NS_FILE_VERSION);
-    write_int(tf, sz);
-    fwrite(s_player->name, sz, 1, tf);
-    write_int(tf, s_player->hp);
-    write_int(tf, s_player->max_hp);
-    write_int(tf, s_player->exp_cl);
-    write_int(tf, s_player->exp_ml);
-    write_int(tf, s_player->call_level_skill);
-    write_int(tf, s_player->mechanics_level_skill);
-    write_int(tf, s_player->money);
-    write_int(tf, s_player->read_necronomicon);
+    if (err == 0)
+    {
+        int32_t fu = 0;
+        
+        write_int(tf, NS_FILE_VERSION);
+        write_int(tf, sz);
+        fwrite(s_player->name, sz, 1, tf);
+        write_int(tf, s_player->hp);
+        write_int(tf, s_player->max_hp);
+        write_int(tf, s_player->exp_cl);
+        write_int(tf, s_player->exp_ml);
+        write_int(tf, s_player->call_level_skill);
+        write_int(tf, s_player->mechanics_level_skill);
+        write_int(tf, s_player->money);
+        write_int(tf, s_player->read_necronomicon);
 
-    if (s_player->unit == NULL)
-    {
-        fu = 0;
-        write_int(tf, fu);
+        if (s_player->unit == NULL)
+        {
+            fu = 0;
+            write_int(tf, fu);
+        }
+        else
+        {
+            fu = 1;
+            write_int(tf, fu);
+            write_int(tf, s_player->unit->hp);
+            write_int(tf, s_player->unit->max_hp);
+            write_int(tf, s_player->unit->danger_level);
+            write_int(tf, s_player->unit->damage);
+            write_int(tf, s_player->unit->ml->armour);
+            write_int(tf, s_player->unit->ml->plazma);
+            write_int(tf, s_player->unit->ml->gun);
+            write_int(tf, s_player->unit->ml->neirosynaptic);
+            write_int(tf, s_player->unit->type);
+        }
+        fclose(tf);
     }
-    else
-    {
-        fu = 1;
-        write_int(tf, fu);
-        write_int(tf, s_player->unit->hp);
-        write_int(tf, s_player->unit->max_hp);
-        write_int(tf, s_player->unit->danger_level);
-        write_int(tf, s_player->unit->damage);
-        write_int(tf, s_player->unit->ml->armour);
-        write_int(tf, s_player->unit->ml->plazma);
-        write_int(tf, s_player->unit->ml->gun);
-        write_int(tf, s_player->unit->ml->neirosynaptic);
-        write_int(tf, s_player->unit->type);
-    }
-    fclose(tf);
 }
 
 char* get_static_filename_with_save()
@@ -347,62 +370,68 @@ int32_t buf_to_int(const unsigned char buf[])
 
 static int32_t get_filename_with_save(lua_State* L)
 {
-    lua_pushstring(L, get_static_filename_with_save());
-    return 1;
+    int32_t stack_count = 0;
+    stack_count += invoke_push_string(L, get_static_filename_with_save());
+    return stack_count;
 }
 
 static int32_t is_home(lua_State* L)
 {
-    lua_pushinteger(L, is_flag_enable(AT_HOME_FLAG));
-    return 1;
+    int32_t stack_count = 0;
+    stack_count += invoke_push_integer(L, is_flag_enable(AT_HOME_FLAG));
+    return stack_count;
 }
 
 static int32_t is_lab(lua_State* L)
 {
-    lua_pushinteger(L, is_flag_enable(AT_MASTER_LAB));
-    return 1;
+    int32_t stack_count = 0;
+    stack_count += invoke_push_integer(L, is_flag_enable(AT_MASTER_LAB));
+    return stack_count;
 }
 
 static int32_t is_zone(lua_State* L)
 {
-    lua_pushinteger(L, is_flag_enable(AT_ZONE_FLAG));
-    return 1;
+    int32_t stack_count = 0;
+    stack_count += invoke_push_integer(L, is_flag_enable(AT_ZONE_FLAG));
+    return stack_count;
 }
 
 static int32_t is_fight_mode(lua_State* L)
 {
-    lua_pushinteger(L, is_flag_enable(ACTIVE_FIGHT_PHASE_FLAG));
-    return 1;
+    int32_t stack_count = 0;
+    stack_count += invoke_push_integer(L, is_flag_enable(ACTIVE_FIGHT_PHASE_FLAG));
+    return stack_count;
 }
 
 static int32_t is_start_fight_mode(lua_State* L)
 {
-    lua_pushinteger(L, is_flag_enable(START_FIGHT_PHASE_FLAG));
-    return 1;
+    int32_t stack_count = 0;
+    stack_count += invoke_push_integer(L, is_flag_enable(START_FIGHT_PHASE_FLAG));
+    return stack_count;
 }
 
 static int32_t return_home(lua_State* L)
 {
     enable_flags(AT_HOME_FLAG);
-    return 1;
+    return 0;
 }
 
 static int32_t into_lab(lua_State* L)
 {
     enable_flags(AT_MASTER_LAB);
-    return 1;
+    return 0;
 }
 
 static int32_t locate_zone(lua_State* L)
 {
-    zone_id = (int)lua_tonumber(L, 1);
+    zone_id = (int32_t)lua_tonumber(L, 1);
     enable_flags(AT_ZONE_FLAG | SHOW_ZONE_INFO_FLAG);
     zones = zones_head;
     while (zones->id != zone_id)
     {
         zones = zones->next_zone;
     }
-    return 1;
+    return 0;
 }
 
 static int32_t call_unit(lua_State* L)
@@ -415,6 +444,7 @@ static int32_t call_unit(lua_State* L)
     int32_t max_s = 0;
     int32_t f_first_c = 0;
     int32_t is_daemon_found = 0;
+    int32_t stack_count = 0;
 
     if (id >= 3)
     {
@@ -540,11 +570,11 @@ static int32_t call_unit(lua_State* L)
 
     if (r_unit > max_s)
     {
-        lua_pushinteger(L, -1);
+        stack_count += invoke_push_integer(L, -1);
     }
     else if ((type == DAEMON && s_player->read_necronomicon == 0) || (type == DAEMON && s_player->call_level_skill < 6))
     {
-        lua_pushinteger(L, -1);
+        stack_count += invoke_push_integer(L, -1);
     }
     else
     {
@@ -613,35 +643,35 @@ static int32_t call_unit(lua_State* L)
             }
             if (type == NORMAL)
             {
-                lua_pushinteger(L, NORMAL);
+                stack_count += invoke_push_integer(L, NORMAL);
             }
             if (type == DAEMON)
             {
-                lua_pushinteger(L, DAEMON);
+                stack_count += invoke_push_integer(L, DAEMON);
             }
         }
     }
-    return 1;
+    return stack_count;
 }
 
 static int32_t set_fight_mode(lua_State* L)
 {
     enable_flags(ACTIVE_FIGHT_PHASE_FLAG);
     damage_type = NO_DAMAGE_TYPE;
-    return 1;
+    return 0;
 }
 
 static int32_t set_start_fight_mode(lua_State* L)
 {
     enable_flags(START_FIGHT_PHASE_FLAG);
     damage_type = NO_DAMAGE_TYPE;
-    return 1;
+    return 0;
 }
 
 static int32_t set_finish_fight(lua_State* L)
 {
     enable_flags(END_FIGHT_PHASE_FLAG | AT_ZONE_FLAG);
-    return 1;
+    return 0;
 }
 
 static int32_t check_zone_unit_ld(lua_State* L)
@@ -650,6 +680,7 @@ static int32_t check_zone_unit_ld(lua_State* L)
     int32_t min_ld;
     int32_t ld;
     int32_t type = random_number(1, 2);
+    int32_t stack_count = 0;
 
     switch (zones->id)
     {
@@ -766,68 +797,72 @@ static int32_t check_zone_unit_ld(lua_State* L)
 
             if ((type == DAEMON && is_daemon_found == 1) || type == NORMAL)
             {
-				if (s_player->unit != NULL)
-				{
-					int32_t danger_ld_diff = s_player->unit->danger_level - zones->units->unit->danger_level;
-					if (danger_ld_diff > 1) 
-					{
-						lua_pushinteger(L, 4);
-						return 1;
-					}
-				}
+                if (s_player->unit != NULL)
+                {
+                    int32_t danger_ld_diff = s_player->unit->danger_level - zones->units->unit->danger_level;
+                    if (danger_ld_diff > 1)
+                    {
+                        stack_count += invoke_push_integer(L, 4);
+                        return stack_count;
+                    }
+                }
                 active_enemy = (struct unit*)malloc(sizeof(struct unit));
                 active_enemy->hp = zones->units->unit->hp;
                 active_enemy->danger_level = zones->units->unit->danger_level;
                 active_enemy->damage = zones->units->unit->damage;
                 active_enemy->type = zones->units->unit->type;
-                lua_pushinteger(L, 1);
+                stack_count += invoke_push_integer(L, 1);
             }
             else
             {
-                lua_pushinteger(L, 0);
+                stack_count += invoke_push_integer(L, 0);
             }
         }
         else
         {
-            lua_pushinteger(L, 0);
+            stack_count += invoke_push_integer(L, 0);
         }
     }
     else
     {
-        lua_pushinteger(L, 0);
+        stack_count += invoke_push_integer(L, 0);
     }
-    return 1;
+    return stack_count;
 }
 
 static int32_t get_current_unit_damage(lua_State* L)
 {
-    lua_pushinteger(L, current_unit_damage);
-    return 1;
+    int32_t stack_count = 0;
+    stack_count += invoke_push_integer(L, current_unit_damage);
+    return stack_count;
 }
 
 static int32_t get_enemy_type(lua_State* L)
 {
     int32_t type = -1;
+    int32_t stack_count = 0;
     if (active_enemy != NULL)
     {
         type = active_enemy->type;
     }
-    lua_pushinteger(L, type);
-    return 1;
+    stack_count += invoke_push_integer(L, type);
+    return stack_count;
 }
 
 static int32_t get_enemy_damage(lua_State* L)
 {
-    lua_pushinteger(L, current_enemy_damage);
-    return 1;
+    int32_t stack_count = 0;
+    stack_count += invoke_push_integer(L, current_enemy_damage);
+    return stack_count;
 }
 
 static int32_t fight(lua_State* L)
 {
-	int32_t gun_div = s_player->unit->ml->gun == 30 ? 2 : 3;
+    int32_t stack_count = 0;
+    int32_t gun_div = s_player->unit->ml->gun == 30 ? 2 : 3;
     current_unit_damage = 0;
-    current_unit_damage = s_player->unit->damage + (s_player->unit->ml->gun / gun_div) + (s_player->unit->ml->neirosynaptic *
-        4);
+    current_unit_damage = s_player->unit->damage + (s_player->unit->ml->gun / gun_div) +
+        (s_player->unit->ml->neirosynaptic * 4);
     current_enemy_damage = 0;
 
     active_enemy->hp = active_enemy->hp - current_unit_damage;
@@ -847,7 +882,7 @@ static int32_t fight(lua_State* L)
             s_player->exp_ml = s_player->exp_ml + 10;
         }
         check_levelup(s_player, s_player->exp_cl);
-        lua_pushinteger(L, 1);
+        stack_count += invoke_push_integer(L, 1);
     }
     if (is_flag_enable(END_FIGHT_PHASE_FLAG) != enable)
     {
@@ -859,9 +894,9 @@ static int32_t fight(lua_State* L)
         }
         else
         {
-			int32_t armour_div = s_player->unit->ml->armour == 20 ? 3 : 4;
-            current_enemy_damage = active_enemy->damage - (s_player->unit->ml->armour / armour_div) - (s_player->unit->ml->plazma
-                * 2);
+            int32_t armour_div = s_player->unit->ml->armour == 20 ? 3 : 4;
+            current_enemy_damage = active_enemy->damage - (s_player->unit->ml->armour / armour_div) -
+                (s_player->unit->ml->plazma * 2);
             s_player->unit->hp = s_player->unit->hp - current_enemy_damage;
         }
         if (s_player->hp <= 0)
@@ -872,7 +907,7 @@ static int32_t fight(lua_State* L)
             s_player->unit->ml = NULL;
             s_player->unit = NULL;
             enable_flags(END_FIGHT_PHASE_FLAG);
-            lua_pushinteger(L, -1);
+            stack_count += invoke_push_integer(L, -1);
         }
         if (s_player->unit != NULL)
         {
@@ -883,198 +918,219 @@ static int32_t fight(lua_State* L)
                 s_player->unit->ml = NULL;
                 s_player->unit = NULL;
                 enable_flags(END_FIGHT_PHASE_FLAG);
-                lua_pushinteger(L, 0);
+                stack_count += invoke_push_integer(L, 0);
             }
         }
     }
-    return 1;
+    return stack_count;
 }
 
 static int32_t check_finish_fight(lua_State* L)
 {
-    lua_pushinteger(L, is_flag_enable(END_FIGHT_PHASE_FLAG));
-    return 1;
+    int32_t stack_count = 0;
+    stack_count += invoke_push_integer(L, is_flag_enable(END_FIGHT_PHASE_FLAG));
+    return stack_count;
 }
 
 static int32_t check_win_fight(lua_State* L)
 {
-    lua_pushinteger(L, is_flag_enable(IS_WIN_FIGHT_FLAG));
-    return 1;
+    int32_t stack_count = 0;
+    stack_count += invoke_push_integer(L, is_flag_enable(IS_WIN_FIGHT_FLAG));
+    return stack_count;
 }
 
 static int32_t check_type_fight(lua_State* L)
 {
-    lua_pushinteger(L, damage_type);
-    return 1;
+    int32_t stack_count = 0;
+    stack_count += invoke_push_integer(L, damage_type);
+    return stack_count;
 }
 
 static int32_t check_unit(lua_State* L)
 {
+    int32_t stack_count = 0;
     if (s_player->unit != NULL)
     {
-        lua_pushboolean(L, 1);
+        stack_count += invoke_push_boolean(L, TRUE);
     }
     else
     {
-        lua_pushboolean(L, 0);
+        stack_count += invoke_push_boolean(L, FALSE);
     }
-    return 1;
+    return stack_count;
 }
 
 static int32_t get_unit_type(lua_State* L)
 {
+    int32_t stack_count = 0;
     if (s_player->unit != NULL)
     {
-        lua_pushinteger(L, s_player->unit->type);
+        stack_count += invoke_push_integer(L, s_player->unit->type);
     }
     else
     {
-        lua_pushinteger(L, -1);
+        stack_count += invoke_push_integer(L, -1);
     }
-    return 1;
+    return stack_count;
 }
 
 static int32_t check_necro(lua_State* L)
 {
+    int32_t stack_count = 0;
     if (s_player->read_necronomicon == 1)
     {
-        lua_pushboolean(L, 1);
+        stack_count += invoke_push_boolean(L, TRUE);
     }
     else
     {
-        lua_pushboolean(L, 0);
+        stack_count += invoke_push_boolean(L, FALSE);
     }
-    return 1;
+    return stack_count;
 }
 
 static int32_t check_armour(lua_State* L)
 {
+    int32_t stack_count = 0;
     if (s_player->mechanics_level_skill >= 1)
     {
-        lua_pushboolean(L, 1);
+        stack_count += invoke_push_boolean(L, TRUE);
     }
     else
     {
-        lua_pushboolean(L, 0);
+        stack_count += invoke_push_boolean(L, FALSE);
     }
-    return 1;
+    return stack_count;
 }
 
 static int32_t check_superarmour(lua_State* L)
 {
+    int32_t stack_count = 0;
     if (s_player->mechanics_level_skill >= 2)
     {
-        lua_pushboolean(L, 1);
+        stack_count += invoke_push_boolean(L, TRUE);
     }
     else
     {
-        lua_pushboolean(L, 0);
+        stack_count += invoke_push_boolean(L, FALSE);
     }
-    return 1;
+    return stack_count;
 }
 
 static int32_t check_gun(lua_State* L)
 {
+    int32_t stack_count = 0;
     if (s_player->mechanics_level_skill >= 3)
     {
-        lua_pushboolean(L, 1);
+        stack_count += invoke_push_boolean(L, TRUE);
     }
     else
     {
-        lua_pushboolean(L, 0);
+        stack_count += invoke_push_boolean(L, FALSE);
     }
-    return 1;
+    return stack_count;
 }
 
 static int32_t check_rocket(lua_State* L)
 {
+    int32_t stack_count = 0;
     if (s_player->mechanics_level_skill >= 4)
     {
-        lua_pushboolean(L, 1);
+        stack_count += invoke_push_boolean(L, TRUE);
     }
     else
     {
-        lua_pushboolean(L, 0);
+        stack_count += invoke_push_boolean(L, FALSE);
     }
-    return 1;
+    return stack_count;
 }
 
 static int32_t check_plazma(lua_State* L)
 {
+    int32_t stack_count = 0;
     if (s_player->mechanics_level_skill >= 5)
     {
-        lua_pushboolean(L, 1);
+        stack_count += invoke_push_boolean(L, TRUE);
     }
     else
     {
-        lua_pushboolean(L, 0);
+        stack_count += invoke_push_boolean(L, FALSE);
     }
-    return 1;
+    return stack_count;
 }
 
 static int32_t check_neurosynaptic(lua_State* L)
 {
+    int32_t stack_count = 0;
     if (s_player->mechanics_level_skill >= 6)
     {
-        lua_pushboolean(L, 1);
+        stack_count += invoke_push_boolean(L, TRUE);
     }
     else
     {
-        lua_pushboolean(L, 0);
+        stack_count += invoke_push_boolean(L, FALSE);
     }
-    return 1;
+    return stack_count;
 }
 
 static int32_t build_armour(lua_State* L)
 {
-    lua_pushinteger(L, create_armourour(s_player));
-    return 1;
+    int32_t stack_count = 0;
+    stack_count += invoke_push_integer(L, create_armourour(s_player));
+    return stack_count;
 }
 
 static int32_t build_superarmour(lua_State* L)
 {
-    lua_pushinteger(L, create_superarmourour(s_player));
-    return 1;
+    int32_t stack_count = 0;
+    stack_count += invoke_push_integer(L, create_superarmourour(s_player));
+    return stack_count;
 }
 
 static int32_t build_gun(lua_State* L)
 {
-    lua_pushinteger(L, create_gun(s_player));
-    return 1;
+    int32_t stack_count = 0;
+    stack_count += invoke_push_integer(L, create_gun(s_player));
+    return stack_count;
 }
 
 static int32_t build_rocket(lua_State* L)
 {
-    lua_pushinteger(L, create_rockets(s_player));
-    return 1;
+    int32_t stack_count = 0;
+    stack_count += invoke_push_integer(L, create_rockets(s_player));
+    return stack_count;
 }
 
 static int32_t build_plazma(lua_State* L)
 {
-    lua_pushinteger(L, create_plazma(s_player));
-    return 1;
+    int32_t stack_count = 0;
+    stack_count += invoke_push_integer(L, create_plazma(s_player));
+    return stack_count;
 }
 
 static int32_t build_neurosynaptic(lua_State* L)
 {
-    lua_pushinteger(L, create_neurosynaptic(s_player));
-    return 1;
+    int32_t stack_count = 0;
+    stack_count += invoke_push_integer(L, create_neurosynaptic(s_player));
+    return stack_count;
 }
 
 static int32_t get_id_zone(lua_State* L)
 {
-    lua_pushinteger(L, zones->id);
-    return 1;
+    int32_t stack_count = 0;
+    stack_count += invoke_push_integer(L, zones->id);
+    return stack_count;
 }
 
 static int32_t get_locate_id_zone(lua_State* L)
 {
-    lua_pushinteger(L, zone_id);
-    return 1;
+    int32_t stack_count = 0;
+    stack_count += invoke_push_integer(L, zone_id);
+    return stack_count;
 }
 
 static int32_t get_zone_min_unit_LD(lua_State* L)
 {
+    int32_t stack_count = 0;
     if (zones != NULL)
     {
         switch (zones->id)
@@ -1106,14 +1162,15 @@ static int32_t get_zone_min_unit_LD(lua_State* L)
             }
         default: break;
         }
-        lua_pushinteger(L, zones->units->unit->danger_level);
+        stack_count += invoke_push_integer(L, zones->units->unit->danger_level);
     }
 
-    return 1;
+    return stack_count;
 }
 
 static int32_t get_zone_max_unit_LD(lua_State* L)
 {
+    int32_t stack_count = 0;
     if (zones != NULL)
     {
         int32_t is_first_daemon_found = 0;
@@ -1151,7 +1208,7 @@ static int32_t get_zone_max_unit_LD(lua_State* L)
         {
             if (zones->units->next_unit->unit->type == DAEMON)
             {
-                lua_pushinteger(L, zones->units->unit->danger_level);
+                stack_count += invoke_push_integer(L, zones->units->unit->danger_level);
                 is_first_daemon_found = 1;
                 break;
             }
@@ -1159,15 +1216,16 @@ static int32_t get_zone_max_unit_LD(lua_State* L)
         }
         if (is_first_daemon_found == 0)
         {
-            lua_pushinteger(L, zones->units->unit->danger_level);
+            stack_count += invoke_push_integer(L, zones->units->unit->danger_level);
         }
     }
 
-    return 1;
+    return stack_count;
 }
 
 static int32_t get_zone_min_daemon_LD(lua_State* L)
 {
+    int32_t stack_count = 0;
     if (zones != NULL)
     {
         int32_t is_daemon_found = 0;
@@ -1210,20 +1268,21 @@ static int32_t get_zone_min_daemon_LD(lua_State* L)
             zones->units = zones->units->next_unit;
             if (is_daemon_found == 1)
             {
-                lua_pushinteger(L, zones->units->unit->danger_level);
+                stack_count += invoke_push_integer(L, zones->units->unit->danger_level);
                 break;
             }
         }
         if (is_daemon_found == 0)
         {
-            lua_pushinteger(L, -1);
+            stack_count += invoke_push_integer(L, -1);
         }
     }
-    return 1;
+    return stack_count;
 }
 
 static int32_t get_zone_max_daemon_LD(lua_State* L)
 {
+    int32_t stack_count = 0;
     if (zones != NULL)
     {
         switch (zones->id)
@@ -1262,18 +1321,19 @@ static int32_t get_zone_max_daemon_LD(lua_State* L)
         }
         if (zones->units->unit->type == NORMAL)
         {
-            lua_pushinteger(L, -1);
+            stack_count += invoke_push_integer(L, -1);
         }
         else
         {
-            lua_pushinteger(L, zones->units->unit->danger_level);
+            stack_count += invoke_push_integer(L, zones->units->unit->danger_level);
         }
     }
-    return 1;
+    return stack_count;
 }
 
 static int32_t get_zones_info(lua_State* L)
 {
+    int32_t stack_count = 0;
     if (is_flag_enable(SHOW_ZONE_INFO_FLAG) == enable)
     {
         zones = zones_head;
@@ -1286,17 +1346,18 @@ static int32_t get_zones_info(lua_State* L)
     if (zones == NULL)
     {
         enable_flags(AT_HOME_FLAG | SHOW_ZONE_INFO_FLAG);
-        lua_pushboolean(L, 0);
+        stack_count += invoke_push_boolean(L, FALSE);
     }
     else
     {
-        lua_pushboolean(L, 1);
+        stack_count += invoke_push_boolean(L, TRUE);
     }
-    return 1;
+    return stack_count;
 }
 
 static int32_t get_zone_info(lua_State* L)
 {
+    int32_t stack_count = 0;
     if (is_flag_enable(SHOW_ZONE_INFO_FLAG) == enable)
     {
         disable_flag(SHOW_ZONE_INFO_FLAG);
@@ -1329,43 +1390,47 @@ static int32_t get_zone_info(lua_State* L)
             }
         default: break;
         }
-        lua_pushboolean(L, 1);
+        stack_count += invoke_push_boolean(L, TRUE);
     }
     else if (is_flag_enable(SHOW_ZONE_INFO_FLAG) == disable && zones->units->next_unit != NULL)
     {
         zones->units = zones->units->next_unit;
-        lua_pushboolean(L, 1);
+        stack_count += invoke_push_boolean(L, TRUE);
     }
     else if (is_flag_enable(SHOW_ZONE_INFO_FLAG) == disable && zones->units->next_unit == NULL)
     {
         enable_flags(AT_ZONE_FLAG | SHOW_ZONE_INFO_FLAG);
-        lua_pushboolean(L, 0);
+        stack_count += invoke_push_boolean(L, FALSE);
     }
-    return 1;
+    return stack_count;
 }
 
 static int32_t get_zone_unit_hp(lua_State* L)
 {
-    lua_pushinteger(L, zones->units->unit->hp);
-    return 1;
+    int32_t stack_count = 0;
+    stack_count += invoke_push_integer(L, zones->units->unit->hp);
+    return stack_count;
 }
 
 static int32_t get_zone_unit_ld(lua_State* L)
 {
-    lua_pushinteger(L, zones->units->unit->danger_level);
-    return 1;
+    int32_t stack_count = 0;
+    stack_count += invoke_push_integer(L, zones->units->unit->danger_level);
+    return stack_count;
 }
 
 static int32_t get_zone_unit_type(lua_State* L)
 {
-    lua_pushinteger(L, zones->units->unit->type);
-    return 1;
+    int32_t stack_count = 0;
+    stack_count += invoke_push_integer(L, zones->units->unit->type);
+    return stack_count;
 }
 
 static int32_t get_zone_unit_damage(lua_State* L)
 {
-    lua_pushinteger(L, zones->units->unit->damage);
-    return 1;
+    int32_t stack_count = 0;
+    stack_count += invoke_push_integer(L, zones->units->unit->damage);
+    return stack_count;
 }
 
 DLL_PUBLIC int32_t luaopen_nslib(lua_State* L)
@@ -1385,7 +1450,7 @@ DLL_PUBLIC int32_t luaopen_nslib(lua_State* L)
         {"load", load},
         {"get_zones_info", get_zones_info},
         {"get_id_zone", get_id_zone},
-        {"get_zone_min_unit_LD", get_zone_min_unit_LD,},
+        {"get_zone_min_unit_LD", get_zone_min_unit_LD},
         {"get_zone_max_unit_LD", get_zone_max_unit_LD},
         {"get_zone_min_daemon_LD", get_zone_min_daemon_LD},
         {"get_zone_max_daemon_LD", get_zone_max_daemon_LD},
@@ -1610,4 +1675,22 @@ void gen_units_for_zone_V(struct units* lst)
     build_next_unit(lst, 24, 700, 760, DAEMON);
     build_next_unit(lst, ZONE_5_DAEMON_MAX_DANGER_LEVEL, 720, 780, DAEMON);
     lst->next_unit = NULL;
+}
+
+int32_t invoke_push_string(lua_State* L, const char* value)
+{
+    lua_pushstring(L, value);
+    return 1;
+}
+
+int32_t invoke_push_integer(lua_State* L, lua_Integer value)
+{
+    lua_pushinteger(L, value);
+    return 1;
+}
+
+int32_t invoke_push_boolean(lua_State* L, enum BooleanType value)
+{
+    lua_pushboolean(L, value);
+    return 1;
 }

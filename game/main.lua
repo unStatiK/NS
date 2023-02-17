@@ -399,7 +399,7 @@ function love.draw()
         if nslib.is_lab() == 1 then
             love.graphics.print("Master's Lab", 646, 50)
         end
-        
+
         if nslib.is_zone() == 1 then
             love.graphics.print("Zone " .. nslib.get_locate_id_zone(), 700, 50)
         end
@@ -416,12 +416,12 @@ function love.draw()
         end
 
         if act_rs == 1 then
-			if command_result_flag == 1 then
-				love.graphics.print("HP is restored !", 170, 50)
-			end
-			if command_result_flag == -1 then
-				love.graphics.print("Not enought money for HP restoring ! Need 100$", 170, 50)
-			end
+            if command_result_flag == 1 then
+                love.graphics.print("HP is restored !", 170, 50)
+            end
+            if command_result_flag == -1 then
+                love.graphics.print("Not enought money for HP restoring ! Need 100$", 170, 50)
+            end
         end
 
         if act_rn == 1 then
@@ -563,7 +563,7 @@ function love.draw()
                 love.graphics.print("No unit with this LD at this zone!", 170, 80)
                 nslib.set_finish_fight()
             end
-			if command_result_flag == 4 then
+            if command_result_flag == 4 then
                 love.graphics.print("Too small LD for battle!", 170, 80)
                 nslib.set_finish_fight()
             end
