@@ -1,0 +1,22 @@
+cmake_minimum_required (VERSION 3.13.5)
+
+if (PLATFORM_FOUND)
+   if ("${COMPILER_ID}" STREQUAL "MSVC")
+      if ("${FOUNDED_PLATFORM}" STREQUAL "x86")
+         find_library(liblua_LIBRARY NAMES lua51 PATHS nslib/lib/32bit)
+      endif()
+      if ("${FOUNDED_PLATFORM}" STREQUAL "x64")
+         find_library(liblua_LIBRARY NAMES lua51 PATHS nslib/lib/64bit)
+      endif()
+   endif()
+endif()
+
+if (liblua_LIBRARY)
+   set(liblua_FOUND TRUE)
+endif ()
+
+if (liblua_FOUND)   
+   message(STATUS "Found liblua: ${liblua_LIBRARY}")
+elseif (liblua_FIND_REQUIRED)
+   message(FATAL_ERROR "Could not find liblua. Please install liblua and liblua-devel packages.")
+endif ()
