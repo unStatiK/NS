@@ -27,7 +27,8 @@ void enable_flags(unsigned int current_flags)
 
 int is_flag_enable(enum Flags flag)
 {
-    if (game_flags & flag) {
+    if (game_flags & flag)
+    {
         return enable;
     }
     return disable;

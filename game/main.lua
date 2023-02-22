@@ -731,6 +731,13 @@ function love.keypressed(key, unicode)
             elseif screen_option_position == 3 then
                 is_screen_option_flag = 0
                 is_start_menu_flag = 0
+                current_screen_mode = old_screen_mode
+                if current_screen_mode == ScreenMode.MODE_800_600 then
+                    screen_option_position = 1
+                end
+                if current_screen_mode == ScreenMode.FULLSCREEN then
+                    screen_option_position = 2
+                end            
             end
         end
     else

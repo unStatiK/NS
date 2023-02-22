@@ -202,7 +202,7 @@ static int32_t load(lua_State* L)
         int32_t sz = 0;
         int fu = 0;
         unsigned char buf[4];
-        
+
         fread(buf, 4, 1, out);
         buf_to_int(buf);
 
@@ -299,14 +299,14 @@ void save_state()
     FILE* tf;
     errno_t err;
     int32_t sz = 0;
-    
+
     err = fopen_s(&tf, FILENAME_WITH_SAVE, "wb");
     sz = (int32_t)strlen(s_player->name);
 
     if (err == 0)
     {
         int32_t fu = 0;
-        
+
         write_int(tf, NS_FILE_VERSION);
         write_int(tf, sz);
         fwrite(s_player->name, sz, 1, tf);
@@ -342,11 +342,6 @@ void save_state()
     }
 }
 
-char* get_static_filename_with_save()
-{
-    return FILENAME_WITH_SAVE;
-}
-
 int32_t write_int(FILE* fp, int32_t value)
 {
     unsigned char bytes[4];
@@ -370,26 +365,19 @@ int32_t buf_to_int(const unsigned char buf[])
 
 static int32_t is_filename_with_save_exist(lua_State* L)
 {
-	int32_t stack_count = 0;
-	FILE* out;
-    errno_t err;    
-    err = fopen_s(&out, FILENAME_WITH_SAVE, "rb");
-	if (err == 0) 
-	{
-		stack_count += invoke_push_integer(L, TRUE);
-		fclose(out);
-	}
-	else 
-	{
-		stack_count += invoke_push_integer(L, FALSE);
-	}
-    return stack_count;
-}
-
-static int32_t get_filename_with_save(lua_State* L)
-{
     int32_t stack_count = 0;
-    stack_count += invoke_push_string(L, get_static_filename_with_save());
+    FILE* out;
+    errno_t err;
+    err = fopen_s(&out, FILENAME_WITH_SAVE, "rb");
+    if (err == 0)
+    {
+        stack_count += invoke_push_integer(L, TRUE);
+        fclose(out);
+    }
+    else
+    {
+        stack_count += invoke_push_integer(L, FALSE);
+    }
     return stack_count;
 }
 
@@ -1525,8 +1513,7 @@ DLL_PUBLIC int32_t luaopen_nslib(lua_State* L)
         {"check_type_fight", check_type_fight},
         {"fight", fight},
         {"set_finish_fight", set_finish_fight},
-        {"get_filename_with_save", get_filename_with_save},
-		{"is_save_exist", is_filename_with_save_exist},
+        {"is_save_exist", is_filename_with_save_exist},
         {NULL, NULL}
     };
     luaL_register(L, "nslib", Map);

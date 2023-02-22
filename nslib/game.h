@@ -55,7 +55,6 @@ enum BooleanType {
     FALSE = 0
 };
 
-char* get_static_filename_with_save();
 int32_t write_int(FILE* fp, int32_t value);
 int32_t buf_to_int(const unsigned char buf[]);
 void save_state();
