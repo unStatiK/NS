@@ -9,7 +9,7 @@ function love.conf(t)
     t.window.height = 600
     t.window.vsync = true
     t.window.fsaa = 0
-    t.modules.joystick = false
+    t.modules.joystick = true
     t.modules.audio = false
     t.modules.keyboard = true
     t.modules.event = true

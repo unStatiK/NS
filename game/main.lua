@@ -648,12 +648,6 @@ function get_screen_mode()
     return current_screen_mode
 end
 
-function love.mousepressed(x, y, button)
-    if button == "l" then
-        -- stub for next version
-    end
-end
-
 function love.keypressed(key, unicode)
     if key == "i" and is_game_start_flag == 1 and show_interact_menu_flag == 0 then
         clear_flags()
@@ -1067,7 +1061,9 @@ function love.mousereleased(x, y, button)
 end
 
 function love.gamepadpressed(joystick, button)
-
+	if button == "y" then
+		love.keypressed("i")
+	end	
 end
 
 function love.gamepadreleased(joystick, button)
