@@ -27,6 +27,38 @@ function init_global_vars()
     is_need_resize_windows = 0
     current_screen_mode = ScreenMode.MODE_800_600
     file_with_save_exist = is_file_with_save_exist()
+	
+	home_interact_menu = {}
+    home_interact_menu["save"] = { ["index"] = 1, ["cli_code"] = "s", ["desc"] = "full desc" }
+    home_interact_menu["restore"] = { ["index"] = 2, ["cli_code"] = "rs", ["desc"] = "full desc" }
+    home_interact_menu["readN"] = { ["index"] = 3, ["cli_code"] = "rn", ["desc"] = "full desc" }
+    home_interact_menu["read"] = { ["index"] = 4, ["cli_code"] = "lm", ["desc"] = "full desc" }
+    home_interact_menu["create"] = { ["index"] = 5, ["cli_code"] = "cb", ["desc"] = "full desc" }
+    home_interact_menu["zone1"] = { ["index"] = 6, ["cli_code"] = "z1", ["desc"] = "full desc" }
+    home_interact_menu["zone2"] = { ["index"] = 7, ["cli_code"] = "z2", ["desc"] = "full desc" }
+    home_interact_menu["zone3"] = { ["index"] = 8, ["cli_code"] = "z3", ["desc"] = "full desc" }
+    home_interact_menu["zone4"] = { ["index"] = 9, ["cli_code"] = "z4", ["desc"] = "full desc" }
+    home_interact_menu["zone5"] = { ["index"] = 10, ["cli_code"] = "z5", ["desc"] = "full desc" }
+	
+	lab_interact_menu = {}
+    lab_interact_menu["craftA"] = { ["index"] = 1, ["cli_code"] = "ca", ["desc"] = "full desc" }
+    lab_interact_menu["crartSA"] = { ["index"] = 2, ["cli_code"] = "csa", ["desc"] = "full desc" }
+    lab_interact_menu["craftG"] = { ["index"] = 3, ["cli_code"] = "cg", ["desc"] = "full desc" }
+    lab_interact_menu["craftR"] = { ["index"] = 4, ["cli_code"] = "cr", ["desc"] = "full desc" }
+    lab_interact_menu["craftP"] = { ["index"] = 5, ["cli_code"] = "cp", ["desc"] = "full desc" }
+    lab_interact_menu["craftN"] = { ["index"] = 6, ["cli_code"] = "cn", ["desc"] = "full desc" }
+    lab_interact_menu["return"] = { ["index"] = 7, ["cli_code"] = "r", ["desc"] = "full desc" }
+    lab_interact_menu["save"] = { ["index"] = 8, ["cli_code"] = "s", ["desc"] = "full desc" }
+	
+	zone_interact_menu = {}
+    zone_interact_menu["zone"] = { ["index"] = 1, ["cli_code"] = "z", ["desc"] = "full desc" }
+    zone_interact_menu["call"] = { ["index"] = 2, ["cli_code"] = "c", ["desc"] = "full desc" }
+    zone_interact_menu["fight"] = { ["index"] = 3, ["cli_code"] = "f", ["desc"] = "full desc" }
+    zone_interact_menu["return"] = { ["index"] = 4, ["cli_code"] = "r", ["desc"] = "full desc" }
+    zone_interact_menu["save"] = { ["index"] = 5, ["cli_code"] = "s", ["desc"] = "full desc" }
+
+	
+	interact_menu_values = home_interact_menu
 end
 
 function init_global_resource()
@@ -48,6 +80,7 @@ function init_global_resource()
     font24 = love.graphics.newFont(game_font, 24)
     font20 = love.graphics.newFont(game_font, 20)
     font16 = love.graphics.newFont(game_font, 16)
+	font12 = love.graphics.newFont(game_font, 12)
     font10 = love.graphics.newFont(game_font, 10)
 end
 
@@ -201,7 +234,7 @@ function show_interact_menu()
     draw6rect(460, 300, 250)
     draw6rect(460, 300, 245)
     draw6rect(460, 300, 240)
-    love.graphics.print("will be enable soon!", (460 - (250 / 2)) + 10, 300)
+    draw6menu(460, 300, 240)
 end
 
 function show_welcome_help()
@@ -618,6 +651,81 @@ function love.draw()
     end
 end
 
+function draw6menu(x, y, radius)
+    len = radius / 2
+
+    p1 = y - (len / 2)
+    p2 = y + (len / 2)
+    p3 = x - (len / 2)
+    p4 = x + (len / 2)
+
+    x_center = (x - len) + (radius / 2)
+    y_center = p2 - (((p2 - 1) - (p1 + 1)) / 2)
+
+    interact_menu_item_points = {}
+    interact_menu_item_points[1] = { ["x"] = 370, ["y"] = 220 }
+    interact_menu_item_points[2] = { ["x"] = 425, ["y"] = 190 }
+    interact_menu_item_points[3] = { ["x"] = 510, ["y"] = 220 }
+    interact_menu_item_points[4] = { ["x"] = 530, ["y"] = 265 }
+    interact_menu_item_points[5] = { ["x"] = 510, ["y"] = 300 }
+    interact_menu_item_points[6] = { ["x"] = 510, ["y"] = 350 }
+    interact_menu_item_points[7] = { ["x"] = 425, ["y"] = 390 }
+    interact_menu_item_points[8] = { ["x"] = 360, ["y"] = 350 }
+    interact_menu_item_points[9] = { ["x"] = 345, ["y"] = 300 }
+    interact_menu_item_points[10] = { ["x"] = 345, ["y"] = 265 }   
+
+
+    -- #index 9
+    local vertices = { x - len, p1 + 1 - (((p1 + 1) - (p2 - 1)) / 2), x - len, p2 - 1, x_center, y_center }
+    love.graphics.polygon("fill", vertices)
+
+    
+    -- #index 10
+    local vertices = { x - len, p1 + 1, x - len, p2 - 1 + (((p1 + 1) - (p2 - 1)) / 2), x_center, y_center }
+    love.graphics.polygon("fill", vertices)
+
+    -- #index 5
+    local vertices = { x + len, p1 + 1 - (((p1 + 1) - (p2 - 1)) / 2), x + len, p2 - 1, x_center, y_center }
+    love.graphics.polygon("fill", vertices)
+
+    -- #index 4
+    local vertices = { x + len, p1 + 1, x + len, p2 - 1 + (((p1 + 1) - (p2 - 1)) / 2), x_center, y_center }
+    love.graphics.polygon("fill", vertices)
+
+    -- #index 2
+    local vertices = { p3 + 1, y - len, p4 - 1, y - len, x_center, y_center }
+    love.graphics.polygon("fill", vertices)
+
+    -- #index 7
+    local vertices = { p3 + 1, y + len, p4 - 1, y + len, x_center, y_center }
+    love.graphics.polygon("fill", vertices)
+
+    -- #index 1
+    local vertices = { x - len, p1, p3, y - len, x_center, y_center }
+    love.graphics.polygon("fill", vertices)
+
+    -- #index 3
+    local vertices = { p4, y - len, x + len, p1, x_center, y_center }
+    love.graphics.polygon("fill", vertices)
+
+    -- #index 8
+    local vertices = { x - len, p2, p3, y + len, x_center, y_center }
+    love.graphics.polygon("fill", vertices)
+
+    -- #index 6
+    local vertices = { x + len, p2, p4, y + len, x_center, y_center }
+    love.graphics.polygon("fill", vertices)
+
+
+    love.graphics.setColor(190, 200, 0)
+	love.graphics.setFont(font12)
+    for key in pairs(interact_menu_values) do
+        local p = interact_menu_item_points[interact_menu_values[key].index]
+        love.graphics.print(key, p.x, p.y)
+    end
+    
+end
+
 function draw6rect(x, y, radius)
     len = radius / 2
 
@@ -628,13 +736,10 @@ function draw6rect(x, y, radius)
 
     love.graphics.line(x - len, p1 + 1, x - len, p2 - 1)
     love.graphics.line(x + len, p1 + 1, x + len, p2 - 1)
-
     love.graphics.line(p3 + 1, y - len, p4 - 1, y - len)
     love.graphics.line(p3 + 1, y + len, p4 - 1, y + len)
-
     love.graphics.line(x - len, p1, p3, y - len)
     love.graphics.line(p4, y - len, x + len, p1)
-
     love.graphics.line(x - len, p2, p3, y + len)
     love.graphics.line(x + len, p2, p4, y + len)
 end
@@ -731,7 +836,7 @@ function love.keypressed(key, unicode)
                 end
                 if current_screen_mode == ScreenMode.FULLSCREEN then
                     screen_option_position = 2
-                end            
+                end
             end
         end
     else
@@ -886,23 +991,25 @@ function check_cli()
                 input_text = ""
                 set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
                 nslib.into_lab()
+				interact_menu_values = lab_interact_menu
             end
         end
         if input_text == "r" then
             input_text = ""
             set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
             nslib.return_home()
+			interact_menu_values = home_interact_menu
         end
         if input_text == "h" then
             input_text = ""
             if nslib.is_home() == 1 then
-                set_flags(0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+                set_flags(0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)				
             end
             if nslib.is_lab() == 1 then
-                set_flags(0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+                set_flags(0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)				
             end
             if nslib.is_zone() == 1 then
-                set_flags(0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+                set_flags(0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)				
             end
         end
         if input_text == "ca" then
@@ -963,6 +1070,7 @@ function check_cli()
                 end
                 set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0)
                 nslib.locate_zone(1)
+				interact_menu_values = zone_interact_menu
             end
         end
         if input_text == "z2" then
@@ -974,6 +1082,7 @@ function check_cli()
                 end
                 set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0)
                 nslib.locate_zone(2)
+				interact_menu_values = zone_interact_menu
             end
         end
         if input_text == "z3" then
@@ -985,6 +1094,7 @@ function check_cli()
                 end
                 set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0)
                 nslib.locate_zone(3)
+				interact_menu_values = zone_interact_menu
             end
         end
         if input_text == "z4" then
@@ -996,6 +1106,7 @@ function check_cli()
                 end
                 set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0)
                 nslib.locate_zone(4)
+				interact_menu_values = zone_interact_menu
             end
         end
         if input_text == "z5" then
@@ -1007,6 +1118,7 @@ function check_cli()
                 end
                 set_flags(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0)
                 nslib.locate_zone(5)
+				interact_menu_values = zone_interact_menu
             end
         end
         if input_text == "c" then
@@ -1045,11 +1157,11 @@ end
 
 function is_file_with_save_exist()
     local is_exist = nslib.is_save_exist()
-	if is_exist == 1 then
-		return true
-	else
-		return false
-	end   
+    if is_exist == 1 then
+        return true
+    else
+        return false
+    end
 end
 
 function trim(s)
@@ -1061,12 +1173,12 @@ function love.mousereleased(x, y, button)
 end
 
 function love.gamepadpressed(joystick, button)
-	if button == "y" then
-		love.keypressed("i")
-	end	
+
 end
 
 function love.gamepadreleased(joystick, button)
-
+    if button == "y" then
+        love.keypressed("i")
+    end
 end
 
