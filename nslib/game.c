@@ -1,9 +1,13 @@
 #include "game.h"
 
 #if defined _WIN32 || defined _WIN64 || defined __CYGWIN__
-#define DLL_PUBLIC __declspec(dllexport)
+	#define DLL_PUBLIC __declspec(dllexport)
 #else
 	#define DLL_PUBLIC
+#endif
+
+#ifdef __unix
+	#define fopen_s(pFile, filename, mode) ((*(pFile))=fopen((filename), (mode)))==NULL
 #endif
 
 #define build_next_unit(UNITS_LIST, DANGER_LEVEL, DAMAGE, HP, TYPE) \
@@ -192,7 +196,7 @@ static int32_t init(lua_State* L)
 static int32_t load(lua_State* L)
 {
     FILE* out;
-    errno_t err;
+    int32_t err;
 
     s_player = (struct player*)malloc(sizeof(struct player));
     err = fopen_s(&out, FILENAME_WITH_SAVE, "rb");
@@ -297,7 +301,7 @@ static int32_t save(lua_State* L)
 void save_state()
 {
     FILE* tf;
-    errno_t err;
+    int32_t err;
     int32_t sz = 0;
 
     err = fopen_s(&tf, FILENAME_WITH_SAVE, "wb");
@@ -367,7 +371,7 @@ static int32_t is_filename_with_save_exist(lua_State* L)
 {
     int32_t stack_count = 0;
     FILE* out;
-    errno_t err;
+    int32_t err;
     err = fopen_s(&out, FILENAME_WITH_SAVE, "rb");
     if (err == 0)
     {
@@ -682,8 +686,8 @@ static int32_t set_finish_fight(lua_State* L)
 
 static int32_t check_zone_unit_ld(lua_State* L)
 {
-    int32_t max_ld;
-    int32_t min_ld;
+    int32_t max_ld = 0;
+    int32_t min_ld = 0;
     int32_t ld;
     int32_t type = random_number(1, 2);
     int32_t stack_count = 0;
