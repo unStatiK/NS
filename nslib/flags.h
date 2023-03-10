@@ -1,4 +1,5 @@
-﻿#pragma once
+#pragma once
+
 enum flag_state { enable = 1, disable = 0 };
 
 enum Flags {

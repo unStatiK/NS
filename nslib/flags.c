@@ -1,4 +1,4 @@
-﻿#include "flags.h"
+#include "flags.h"
 
 static unsigned int game_flags;
 
