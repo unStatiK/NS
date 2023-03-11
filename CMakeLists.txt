@@ -4,7 +4,7 @@ project (nslib)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
-include(detectplatform)
+include(DetectPlatform)
 find_package(liblua REQUIRED)
 
 add_subdirectory (nslib)

@@ -8,6 +8,8 @@ if (PLATFORM_FOUND)
       if ("${FOUNDED_PLATFORM}" STREQUAL "x64")
          find_library(liblua_LIBRARY NAMES lua51 PATHS nslib/lib/64bit)
       endif()
+   else()
+      find_library(liblua_LIBRARY NAMES lua-5.1)
    endif()
 endif()
 

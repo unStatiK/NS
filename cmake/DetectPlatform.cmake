@@ -12,6 +12,8 @@ if ("${COMPILER_ID}" STREQUAL "MSVC")
         set(FOUNDED_PLATFORM x86)
         set(PLATFORM_FOUND true)
     endif()
+else()
+    set(PLATFORM_FOUND true)
 endif()
 
 if (PLATFORM_FOUND)   
