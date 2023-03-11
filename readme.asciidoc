@@ -40,5 +40,6 @@ or if use TinyCC
  CC=<tcc_path>/tcc cmake -S . -B build/
  
  cd build
- CFLAGS="-O3" make
+ export CFLAGS="-O3"
+ make
 
