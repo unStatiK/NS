@@ -1,3 +1,44 @@
 Rules (In Russia)
 
 link:rules.asciidoc[]
+
+= Build instruction.
+
+*Support build :*
+
+- [X] Support Visual studio 2010 - 2022
+
+- [X] Support makefile and GCC
+
+- [X] Support makefile and TCC
+
+- [X] Support x86 Windows
+
+- [X] Support x64 Windows
+
+- [X] Support x86 Linux
+
+- [X] Support x64 Linux
+
+
+*On Windows :*
+
+ cmake -G 'Visual Studio 10 2010' -A x64
+
+or
+
+ cmake -G 'Visual Studio 10 2010' -A Win32
+
+
+*On Linux or Macos :*
+
+ mkdir build
+ cmake -S . -B build/
+
+or if use TinyCC
+
+ CC=<tcc_path>/tcc cmake -S . -B build/
+ 
+ cd build
+ CFLAGS="-O3" make
+
